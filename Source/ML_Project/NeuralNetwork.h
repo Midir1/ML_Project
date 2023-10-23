@@ -1,8 +1,15 @@
 ﻿#pragma once
-#include <vector>
 
-class NeuralNetwork
+#include <vector>
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "NeuralNetwork.generated.h"
+
+UCLASS()
+class ML_PROJECT_API ANeuralNetwork : public AActor
 {
+	GENERATED_BODY()
+
 	struct FTrainingEntry
 	{
 		std::vector<double> Inputs;
@@ -36,13 +43,13 @@ public:
 		bool UseBatchLearning = false;
 
 		// Stopping conditions
-		uint32_t MaxEpochs = 150;
+		uint32 MaxEpochs = 150;
 		double DesiredAccuracy = 90;
 	} NetworkConfiguration;
 
 	//Constructors for initialization
-	NeuralNetwork();
-	explicit NeuralNetwork(std::vector<double> const& Weights);
+	ANeuralNetwork();
+	explicit ANeuralNetwork(std::vector<double> const& Weights);
 
 	void Train(FTrainingData const& TrainingData);
 
@@ -56,7 +63,7 @@ private:
 	std::vector<double> InputsValues;
 	std::vector<double> HiddenValues;
 	std::vector<double> OutputsValues;
-	std::vector<uint32> OutputsValuesClamped;
+	std::vector<int32> OutputsValuesClamped;
 
 	std::vector<double> InputsWeights;
 	std::vector<double> HiddenWeights;
@@ -74,7 +81,7 @@ private:
 	uint32 MaxEpochs;
 	bool UseBatchLearning;
 
-	uint32_t CurrentEpoch;  
+	uint32 CurrentEpoch;  
 	double TrainingSetAccuracy;
 	double ValidationSetAccuracy;
 	double GeneralizationSetAccuracy;
@@ -87,7 +94,7 @@ private:
 	void InitializeWeights();
 	void LoadWeights(std::vector<double> const& Weight);
 
-	std::vector<uint32> const& Evaluate(std::vector<double> const& Input);
+	std::vector<int32> const& Evaluate(std::vector<double> const& Input);
 
 	double GetHiddenErrorGradient(uint32 HiddenIndex) const;
 
@@ -108,7 +115,7 @@ private:
 	{
 		if (X < 0.1) return 0;
 		if (X > 0.9) return 1;
-		return -1; //why -1 ?
+		return X;
 	}
 
 	//Index Accessors

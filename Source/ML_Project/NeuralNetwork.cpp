@@ -1,20 +1,21 @@
 ﻿#include "NeuralNetwork.h"
+#include "Math/UnrealMathUtility.h"
 
-NeuralNetwork::NeuralNetwork()
+ANeuralNetwork::ANeuralNetwork()
 {
 	InitializeNbNeurons();
 	InitializeNetwork();
 	InitializeWeights();
 }
 
-NeuralNetwork::NeuralNetwork(std::vector<double> const& Weights)
+ANeuralNetwork::ANeuralNetwork(std::vector<double> const& Weights)
 {
 	InitializeNbNeurons();
 	InitializeNetwork();
 	LoadWeights(Weights);
 }
 
-void NeuralNetwork::Train(FTrainingData const& TrainingData)
+void ANeuralNetwork::Train(FTrainingData const& TrainingData)
 {
 	// Reset
 	CurrentEpoch = 0;
@@ -36,14 +37,14 @@ void NeuralNetwork::Train(FTrainingData const& TrainingData)
 	GetSetAccuracyAndMse(TrainingData.ValidationSet, ValidationSetAccuracy, ValidationSetMse);
 }
 
-void NeuralNetwork::InitializeNbNeurons()
+void ANeuralNetwork::InitializeNbNeurons()
 {
 	NbInputs = NeuronsConfiguration.NbInputs;
 	NbHidden = NeuronsConfiguration.NbHidden;
 	NbOutputs = NeuronsConfiguration.NbOutputs;
 }
 
-void NeuralNetwork::InitializeNetwork()
+void ANeuralNetwork::InitializeNetwork()
 {
 	//Resizing the neurons values of InputLayer and HiddenLayer to add bias neurons
 	InputsValues.resize(NbInputs + 1);
@@ -77,15 +78,15 @@ void NeuralNetwork::InitializeNetwork()
 	std::fill(ErrorGradientsOutputs.begin(), ErrorGradientsOutputs.end(), 0);
 }
 
-void NeuralNetwork::InitializeWeights()
+void ANeuralNetwork::InitializeWeights()
 {
 	for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
 	{
 		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
 		{
 			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
-			// double const Weight;
-			// InputsWeights[WeightIndex] = Weight;
+			double const Weight = FMath::RandRange(-0.5, 0.5);
+			InputsWeights[WeightIndex] = Weight;
 		}
 	}
 
@@ -94,13 +95,13 @@ void NeuralNetwork::InitializeWeights()
 		for (uint32 OutputIndex = 0; OutputIndex <= NbOutputs; OutputIndex++)
 		{
 			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
-			// double const Weight;
-			// HiddenWeights[WeightIndex] = Weight;
+			double const Weight = FMath::RandRange(-0.5, 0.5);
+			HiddenWeights[WeightIndex] = Weight;
 		}
 	}
 }
 
-void NeuralNetwork::LoadWeights(std::vector<double> const& Weight)
+void ANeuralNetwork::LoadWeights(std::vector<double> const& Weight)
 {
 	for (uint32 InputIndex = 0; InputIndex < NbInputs * NbHidden; InputIndex++)
 	{
@@ -113,7 +114,7 @@ void NeuralNetwork::LoadWeights(std::vector<double> const& Weight)
 	}
 }
 
-std::vector<uint32> const& NeuralNetwork::Evaluate(std::vector<double> const& Input)
+std::vector<int32> const& ANeuralNetwork::Evaluate(std::vector<double> const& Input)
 {
 	memcpy(InputsValues.data(), Input.data(), Input.size() * sizeof(double));
 
@@ -147,7 +148,7 @@ std::vector<uint32> const& NeuralNetwork::Evaluate(std::vector<double> const& In
 	return OutputsValuesClamped;
 }
 
-double NeuralNetwork::GetHiddenErrorGradient(const uint32 HiddenIndex) const
+double ANeuralNetwork::GetHiddenErrorGradient(const uint32 HiddenIndex) const
 {
 	double ErrorsWeightedSum = 0;
 	
@@ -160,7 +161,7 @@ double NeuralNetwork::GetHiddenErrorGradient(const uint32 HiddenIndex) const
 	return HiddenValues[HiddenIndex] * (1.0 - HiddenValues[HiddenIndex]) * ErrorsWeightedSum;
 }
 
-void NeuralNetwork::RunEpoch(FTrainingSet const& TrainingSet)
+void ANeuralNetwork::RunEpoch(FTrainingSet const& TrainingSet)
 {
 	double IncorrectEntries = 0;
 	double Mse = 0;
@@ -197,7 +198,7 @@ void NeuralNetwork::RunEpoch(FTrainingSet const& TrainingSet)
 	TrainingSetMse = Mse / (NbOutputs * TrainingSet.size());
 }
 
-void NeuralNetwork::Backpropagation(std::vector<uint32> const& ExpectedOutputs)
+void ANeuralNetwork::Backpropagation(std::vector<uint32> const& ExpectedOutputs)
 {
 	for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
 	{
@@ -248,7 +249,7 @@ void NeuralNetwork::Backpropagation(std::vector<uint32> const& ExpectedOutputs)
 	}
 }
 
-void NeuralNetwork::UpdateWeights()
+void ANeuralNetwork::UpdateWeights()
 {
 	for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
 	{
@@ -279,7 +280,7 @@ void NeuralNetwork::UpdateWeights()
 	}
 }
 
-void NeuralNetwork::GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, double& Accuracy, double& Mse)
+void ANeuralNetwork::GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, double& Accuracy, double& Mse)
 {
 	Accuracy = 0;
 	Mse = 0;
