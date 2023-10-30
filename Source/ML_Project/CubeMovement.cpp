@@ -15,14 +15,16 @@ void ACubeMovement::BeginPlay()
 void ACubeMovement::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	const float Vertical = GetInputAxisValue(FName("MoveForward"));
-	float horizontal = GetInputAxisValue(FName("MoveRight"));
-
-	const FVector Movement = GetActorLocation() + horizontal * DeltaTime + Vertical * DeltaTime;
-	SetActorLocation(Movement);
 	
+	Vertical = GetInputAxisValue(FName("MoveForward"));
+	Horizontal = GetInputAxisValue(FName("MoveRight"));
 
+	Movement = (GetActorLocation() + Horizontal + Vertical) * DeltaTime;
+
+	GEngine->AddOnScreenDebugMessage(5,-1,FColor::Cyan,
+		FString::Printf(TEXT("Movement : %f, %f, %f"), Movement.X, Movement.Y, Movement.Z));
+	
+	SetActorLocation(Movement);
 }
 
 void ACubeMovement::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
