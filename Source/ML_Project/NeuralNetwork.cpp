@@ -3,15 +3,24 @@
 
 ANeuralNetwork::ANeuralNetwork()
 {
-	InitializeNbNeurons();
+	//Don't know why + Have To remove from AActor
+}
+
+ANeuralNetwork::ANeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
+                               FNetworkConfiguration const& NetworkConfiguration)
+{
+	InitializeNbNeurons(NeuronsConfiguration);
 	InitializeNetwork();
+	InitializeNetworkConfiguration(NetworkConfiguration);
 	InitializeWeights();
 }
 
-ANeuralNetwork::ANeuralNetwork(std::vector<double> const& Weights)
+ANeuralNetwork::ANeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
+	FNetworkConfiguration const& NetworkConfiguration, std::vector<double> const& Weights)
 {
-	InitializeNbNeurons();
+	InitializeNbNeurons(NeuronsConfiguration);
 	InitializeNetwork();
+	InitializeNetworkConfiguration(NetworkConfiguration);
 	LoadWeights(Weights);
 }
 
@@ -37,7 +46,7 @@ void ANeuralNetwork::Train(FTrainingData const& TrainingData)
 	GetSetAccuracyAndMse(TrainingData.ValidationSet, ValidationSetAccuracy, ValidationSetMse);
 }
 
-void ANeuralNetwork::InitializeNbNeurons()
+void ANeuralNetwork::InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration)
 {
 	NbInputs = NeuronsConfiguration.NbInputs;
 	NbHidden = NeuronsConfiguration.NbHidden;
@@ -76,6 +85,15 @@ void ANeuralNetwork::InitializeNetwork()
 	std::fill(DeltaHiddenWeights.begin(), DeltaHiddenWeights.end(), 0);
 	std::fill(ErrorGradientsHidden.begin(), ErrorGradientsHidden.end(), 0);
 	std::fill(ErrorGradientsOutputs.begin(), ErrorGradientsOutputs.end(), 0);
+}
+
+void ANeuralNetwork::InitializeNetworkConfiguration(FNetworkConfiguration const& NetworkConfiguration)
+{
+	LearningRate = NetworkConfiguration.LearningRate;
+	Momentum = NetworkConfiguration.Momentum;
+	UseBatchLearning = NetworkConfiguration.UseBatchLearning;
+	MaxEpochs = NetworkConfiguration.MaxEpochs;
+	DesiredAccuracy = NetworkConfiguration.DesiredAccuracy;
 }
 
 void ANeuralNetwork::InitializeWeights()

@@ -10,6 +10,8 @@ class ML_PROJECT_API ANeuralNetwork : public AActor
 {
 	GENERATED_BODY()
 
+public:
+
 	struct FTrainingEntry
 	{
 		std::vector<double> Inputs;
@@ -25,15 +27,13 @@ class ML_PROJECT_API ANeuralNetwork : public AActor
 		FTrainingSet ValidationSet;
 	};
 	
-public:
-	
 	//Basic struct to declare numbers of neurons in InputsLayer, HiddenLayer and OutputsLayer
 	struct FNeuronsConfiguration
 	{
 		uint32 NbInputs;
 		uint32 NbHidden;
 		uint32 NbOutputs;
-	} NeuronsConfiguration;
+	};
 
 	struct FNetworkConfiguration
 	{
@@ -45,11 +45,14 @@ public:
 		// Stopping conditions
 		uint32 MaxEpochs = 150;
 		double DesiredAccuracy = 90;
-	} NetworkConfiguration;
+	};
 
-	//Constructors for initialization
 	ANeuralNetwork();
-	explicit ANeuralNetwork(std::vector<double> const& Weights);
+	//Constructors for initialization
+	explicit ANeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
+		FNetworkConfiguration const& NetworkConfiguration);
+	explicit ANeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
+		FNetworkConfiguration const& NetworkConfiguration, std::vector<double> const& Weights);
 
 	void Train(FTrainingData const& TrainingData);
 
@@ -89,8 +92,9 @@ private:
 	double ValidationSetMse;
 	double GeneralizationSetMse;
 
-	void InitializeNbNeurons();
+	void InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration);
 	void InitializeNetwork();
+	void InitializeNetworkConfiguration(FNetworkConfiguration const& NetworkConfiguration);
 	void InitializeWeights();
 	void LoadWeights(std::vector<double> const& Weight);
 

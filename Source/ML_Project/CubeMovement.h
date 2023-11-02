@@ -1,34 +1,67 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NeuralNetwork.h"
 #include "GameFramework/Character.h"
 #include "CubeMovement.generated.h"
+
+struct FInputActionValue;
+class UInputComponent;
 
 UCLASS()
 class ML_PROJECT_API ACubeMovement : public ACharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputMappingContext* DefaultMappingContext;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* MoveAction;
+
 public:
-	// Sets default values for this character's properties
 	ACubeMovement();
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void Move(const FInputActionValue& Value);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
 private:
-	
 	float Horizontal = 0.0f;
 	float Vertical = 0.0f;
 	FVector Movement = FVector::Zero();
+
+	UPROPERTY(EditAnywhere)
+	AActor* Sphere = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	uint32 NbInputs = 0;
+
+	UPROPERTY(EditAnywhere)
+	uint32 NbHidden = 0;
+	
+	UPROPERTY(EditAnywhere)
+	uint32 NbOutputs = 0;
+
+	UPROPERTY(EditAnywhere)
+	double LearningRate = 0.001;
+
+	UPROPERTY(EditAnywhere)
+	double Momentum = 0.9;
+	
+	UPROPERTY(EditAnywhere)
+	bool UseBatchLearning = false;
+
+	UPROPERTY(EditAnywhere)
+	double MaxEpochs = 200;
+
+	UPROPERTY(EditAnywhere)
+	double DesiredAccuracy = 90;
+	
+	std::vector<ANeuralNetwork::FTrainingEntry> Entries;
+	ANeuralNetwork::FTrainingData Data;
+
+	void NeuralNetworkMain();
 };
