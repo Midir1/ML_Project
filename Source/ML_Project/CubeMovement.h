@@ -14,10 +14,10 @@ class ML_PROJECT_API ACubeMovement : public ACharacter
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
+	class UInputMappingContext* DefaultMappingContext = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
+	class UInputAction* MoveAction = nullptr;
 
 public:
 	ACubeMovement();
@@ -60,8 +60,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	double DesiredAccuracy = 90;
 	
-	std::vector<ANeuralNetwork::FTrainingEntry> Entries;
-	ANeuralNetwork::FTrainingData Data;
+	std::vector<FNeuralNetwork::FTrainingEntry> Entries;
+	FNeuralNetwork::FTrainingData Data;
+
+	FNeuralNetwork ThisNeuralNetwork;
 
 	void NeuralNetworkMain();
 };

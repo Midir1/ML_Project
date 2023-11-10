@@ -1,15 +1,9 @@
 ﻿#pragma once
 
 #include <vector>
-#include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "NeuralNetwork.generated.h"
 
-UCLASS()
-class ML_PROJECT_API ANeuralNetwork : public AActor
+class FNeuralNetwork
 {
-	GENERATED_BODY()
-
 public:
 
 	struct FTrainingEntry
@@ -47,14 +41,25 @@ public:
 		double DesiredAccuracy = 90;
 	};
 
-	ANeuralNetwork();
+	FNeuralNetwork();
 	//Constructors for initialization
-	explicit ANeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
+	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
 		FNetworkConfiguration const& NetworkConfiguration);
-	explicit ANeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
+	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
 		FNetworkConfiguration const& NetworkConfiguration, std::vector<double> const& Weights);
 
 	void Train(FTrainingData const& TrainingData);
+
+	//temp
+	int32 GetOutputsValuesClamped() const
+	{
+		return OutputsValuesClamped.back();
+	}
+
+	int GetNbOutputs() const
+	{
+		return NbOutputs;
+	}
 
 private:
 

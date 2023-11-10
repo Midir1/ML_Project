@@ -21,6 +21,8 @@ void ACubeMovement::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	NeuralNetworkMain();
 }
 
 void ACubeMovement::Move(const FInputActionValue& Value)
@@ -36,33 +38,91 @@ void ACubeMovement::Move(const FInputActionValue& Value)
 
 void ACubeMovement::NeuralNetworkMain()
 {
-	ANeuralNetwork::FNeuronsConfiguration NeuronsConfiguration;
+	FNeuralNetwork::FNeuronsConfiguration NeuronsConfiguration;
 	NeuronsConfiguration.NbInputs = NbInputs;
 	NeuronsConfiguration.NbHidden = NbHidden;
 	NeuronsConfiguration.NbOutputs = NbOutputs;
 	
-	ANeuralNetwork::FNetworkConfiguration NetworkConfiguration;
+	FNeuralNetwork::FNetworkConfiguration NetworkConfiguration;
 	NetworkConfiguration.LearningRate = LearningRate;
 	NetworkConfiguration.Momentum = Momentum;
 	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
 	NetworkConfiguration.MaxEpochs = MaxEpochs;
 	NetworkConfiguration.DesiredAccuracy = DesiredAccuracy;
 
-	ANeuralNetwork NeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
+	const FNeuralNetwork NeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
+	ThisNeuralNetwork = NeuralNetwork;
 
-	//NeuralNetwork.Train();
+	ThisNeuralNetwork.Train(Data);
 }
 
 void ACubeMovement::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//First doing with only horizontal axis : Y axis
+	//const FVector Distance = Sphere->GetActorLocation() - GetActorLocation();
+	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
+
 	//Condition
-	if(GetActorLocation() != Sphere->GetActorLocation())
+	if(Distance != 0.0f)
 	{
-		Entries.push_back(ANeuralNetwork::FTrainingEntry());
-		ANeuralNetwork::FTrainingEntry& TrainingEntries = Entries.back();
+		Entries.push_back(FNeuralNetwork::FTrainingEntry());
+		FNeuralNetwork::FTrainingEntry& TrainingEntries = Entries.back();
+		
+		TrainingEntries.Inputs.push_back(Distance);
+
+		//Right : D
+		if(Distance > 0.0f)
+		{
+			TrainingEntries.ExpectedOutputs.push_back(1.0f);
+		}
+		//Left : Q
+		else
+		{
+			TrainingEntries.ExpectedOutputs.push_back(-1.0f);
+		}
 	}
+
+	// Temp WIP
+	// Training set
+	int32 const numEntries = Entries.size();
+	int32 const numTrainingEntries  = static_cast<int32>(0.6 * numEntries);
+	int32 const numGeneralizationEntries = static_cast<int32>(ceil(0.2 * numEntries));
+
+	int32 entryIdx = 0;
+	for ( ; entryIdx < numTrainingEntries; entryIdx++ )
+	{
+		Data.TrainingSet.push_back( Entries[entryIdx] );
+	}
+
+	// Generalization set
+	for ( ; entryIdx < numTrainingEntries + numGeneralizationEntries; entryIdx++ )
+	{
+		Data.GeneralizationSet.push_back( Entries[entryIdx] );
+	}
+
+	// Validation set
+	for ( ; entryIdx < numEntries; entryIdx++ )
+	{
+		Data.ValidationSet.push_back( Entries[entryIdx] );
+	}
+
+	//Must check outputsValuesClamped because always returning 0
+	if(ThisNeuralNetwork.GetNbOutputs() > 0)
+	{
+		if (Controller != nullptr)
+		{
+			//AddMovementInput(GetActorForwardVector(), MovementVector.Y);
+			AddMovementInput(GetActorRightVector(), ThisNeuralNetwork.GetOutputsValuesClamped());
+		}
+
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
+			FString::Printf(TEXT("Distance, Output : %f, %d"), Distance,
+				ThisNeuralNetwork.GetOutputsValuesClamped()));
+	}
+	
+	
 }
 
 void ACubeMovement::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
