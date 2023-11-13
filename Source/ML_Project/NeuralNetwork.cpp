@@ -35,6 +35,7 @@ void FNeuralNetwork::Train(FTrainingData const& TrainingData)
 	ValidationSetMse = 0;
 	GeneralizationSetMse = 0;
 
+	// Here crash
 	while((TrainingSetAccuracy < DesiredAccuracy || GeneralizationSetAccuracy < DesiredAccuracy)
 		&& CurrentEpoch < MaxEpochs)
 	{

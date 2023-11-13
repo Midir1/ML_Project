@@ -6,17 +6,25 @@
 ACubeMovement::ACubeMovement()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
 }
 
 void ACubeMovement::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	// Want to update training data when launch the neural network
-	// NeuralNetworkMain -> Crash in Tick
-	NetworkTick();
-	NeuralNetworkMain();
+
+	Timer += DeltaTime;
+
+	if(Timer > TimeWanted)
+	{
+		Timer = 0.0f;
+
+		//Update Entries first
+		NetworkTick();
+		//Train NN
+		NeuralNetworkMain();
+		//Update values with outputs
+		NetworkUpdateValues();
+	}
 }
 
 void ACubeMovement::BeginPlay()
@@ -31,8 +39,6 @@ void ACubeMovement::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
-	
 }
 
 void ACubeMovement::Move(const FInputActionValue& Value)
@@ -77,27 +83,25 @@ void ACubeMovement::NetworkTick()
 	{
 		Entries.push_back(FNeuralNetwork::FTrainingEntry());
 
-		FNeuralNetwork::FTrainingEntry TrainingEntries = Entries.back();
-
 		uint32 i = 0;
 		
 		while (i < NbInputs + NbOutputs)
 		{
-			if(TrainingEntries.Inputs.size() < NbInputs)
+			if(Entries.back().Inputs.size() < NbInputs)
 			{
-				TrainingEntries.Inputs.push_back(Distance);
+				Entries.back().Inputs.push_back(Distance);
 			}
 			else
 			{
 				//Right : D
 				if(Distance > 0.0f)
 				{
-					TrainingEntries.ExpectedOutputs.push_back(1.0f);
+					Entries.back().ExpectedOutputs.push_back(1.0f);
 				}
 				//Left : Q
 				else
 				{
-					TrainingEntries.ExpectedOutputs.push_back(-1.0f);
+					Entries.back().ExpectedOutputs.push_back(-1.0f);
 				}
 			}
 
@@ -111,43 +115,46 @@ void ACubeMovement::NetworkTick()
 			int32 const numEntries = Entries.size();
 			int32 const numTrainingEntries  = static_cast<int32>(0.6 * numEntries);
 			int32 const numGeneralizationEntries = static_cast<int32>(ceil(0.2 * numEntries));
-
-			int32 entryIdx = 0;
-			for ( ; entryIdx < numTrainingEntries; entryIdx++ )
+			
+			for (int32 j = 0; j < numTrainingEntries; j++)
 			{
-				Data.TrainingSet.push_back( Entries[entryIdx] );
+				Data.TrainingSet.push_back(Entries[j]);
 			}
 
 			// Generalization set
-			for ( ; entryIdx < numTrainingEntries + numGeneralizationEntries; entryIdx++ )
+			for (int32 x = 0 ; x < numTrainingEntries + numGeneralizationEntries; x++)
 			{
-				Data.GeneralizationSet.push_back( Entries[entryIdx] );
+				Data.GeneralizationSet.push_back(Entries[x]);
 			}
 
 			// Validation set
-			for ( ; entryIdx < numEntries; entryIdx++ )
+			for (int32 z = 0 ; z < numEntries; z++)
 			{
-				Data.ValidationSet.push_back( Entries[entryIdx] );
+				Data.ValidationSet.push_back(Entries[z]);
 			}
-		}
-
-		// Not here for changing movement value
-		// ThisNeuralNetwork is changed in NeuralNetworkMain
-		//Must check outputsValuesClamped because always returning 0
-		if(ThisNeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
-		{
-			if (Controller != nullptr)
-			{
-				//AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-				AddMovementInput(GetActorRightVector(), ThisNeuralNetwork.GetOutputsValuesClamped());
-			}
-	
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
-				FString::Printf(TEXT("Distance, Output : %f, %d"), Distance,
-					ThisNeuralNetwork.GetOutputsValuesClamped()));
 		}
 	}
+}
+
+void ACubeMovement::NetworkUpdateValues()
+{
+	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
 	
+	// Not here for changing movement value
+	// ThisNeuralNetwork is changed in NeuralNetworkMain
+	//Must check outputsValuesClamped because always returning 0
+	if(ThisNeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
+	{
+		if (Controller != nullptr)
+		{
+			//AddMovementInput(GetActorForwardVector(), MovementVector.Y);
+			AddMovementInput(GetActorRightVector(), ThisNeuralNetwork.GetOutputsValuesClamped());
+		}
+	
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
+			FString::Printf(TEXT("Distance, Output : %f, %d"), Distance,
+				ThisNeuralNetwork.GetOutputsValuesClamped()));
+	}
 }
 
 void ACubeMovement::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

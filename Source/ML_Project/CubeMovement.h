@@ -33,6 +33,9 @@ private:
 	float Vertical = 0.0f;
 	FVector Movement = FVector::Zero();
 
+	float Timer = 0.0f;
+	float TimeWanted = 1.0f;
+
 	UPROPERTY(EditAnywhere)
 	AActor* Sphere = nullptr;
 
@@ -67,4 +70,5 @@ private:
 
 	void NeuralNetworkMain();
 	void NetworkTick();
+	void NetworkUpdateValues();
 };
