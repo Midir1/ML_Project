@@ -9,6 +9,16 @@ ACubeMovement::ACubeMovement()
 	
 }
 
+void ACubeMovement::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	// Want to update training data when launch the neural network
+	// NeuralNetworkMain -> Crash in Tick
+	NetworkTick();
+	NeuralNetworkMain();
+}
+
 void ACubeMovement::BeginPlay()
 {
 	Super::BeginPlay();
@@ -22,7 +32,7 @@ void ACubeMovement::BeginPlay()
 		}
 	}
 
-	NeuralNetworkMain();
+	
 }
 
 void ACubeMovement::Move(const FInputActionValue& Value)
@@ -56,10 +66,8 @@ void ACubeMovement::NeuralNetworkMain()
 	ThisNeuralNetwork.Train(Data);
 }
 
-void ACubeMovement::Tick(const float DeltaTime)
+void ACubeMovement::NetworkTick()
 {
-	Super::Tick(DeltaTime);
-
 	//First doing with only horizontal axis : Y axis
 	//const FVector Distance = Sphere->GetActorLocation() - GetActorLocation();
 	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
@@ -68,60 +76,77 @@ void ACubeMovement::Tick(const float DeltaTime)
 	if(Distance != 0.0f)
 	{
 		Entries.push_back(FNeuralNetwork::FTrainingEntry());
-		FNeuralNetwork::FTrainingEntry& TrainingEntries = Entries.back();
+
+		FNeuralNetwork::FTrainingEntry TrainingEntries = Entries.back();
+
+		uint32 i = 0;
 		
-		TrainingEntries.Inputs.push_back(Distance);
-
-		//Right : D
-		if(Distance > 0.0f)
+		while (i < NbInputs + NbOutputs)
 		{
-			TrainingEntries.ExpectedOutputs.push_back(1.0f);
+			if(TrainingEntries.Inputs.size() < NbInputs)
+			{
+				TrainingEntries.Inputs.push_back(Distance);
+			}
+			else
+			{
+				//Right : D
+				if(Distance > 0.0f)
+				{
+					TrainingEntries.ExpectedOutputs.push_back(1.0f);
+				}
+				//Left : Q
+				else
+				{
+					TrainingEntries.ExpectedOutputs.push_back(-1.0f);
+				}
+			}
+
+			i++;
 		}
-		//Left : Q
-		else
+		
+		if(!Entries.empty())
 		{
-			TrainingEntries.ExpectedOutputs.push_back(-1.0f);
+			// Temp WIP
+			// Training set
+			int32 const numEntries = Entries.size();
+			int32 const numTrainingEntries  = static_cast<int32>(0.6 * numEntries);
+			int32 const numGeneralizationEntries = static_cast<int32>(ceil(0.2 * numEntries));
+
+			int32 entryIdx = 0;
+			for ( ; entryIdx < numTrainingEntries; entryIdx++ )
+			{
+				Data.TrainingSet.push_back( Entries[entryIdx] );
+			}
+
+			// Generalization set
+			for ( ; entryIdx < numTrainingEntries + numGeneralizationEntries; entryIdx++ )
+			{
+				Data.GeneralizationSet.push_back( Entries[entryIdx] );
+			}
+
+			// Validation set
+			for ( ; entryIdx < numEntries; entryIdx++ )
+			{
+				Data.ValidationSet.push_back( Entries[entryIdx] );
+			}
 		}
-	}
 
-	// Temp WIP
-	// Training set
-	int32 const numEntries = Entries.size();
-	int32 const numTrainingEntries  = static_cast<int32>(0.6 * numEntries);
-	int32 const numGeneralizationEntries = static_cast<int32>(ceil(0.2 * numEntries));
-
-	int32 entryIdx = 0;
-	for ( ; entryIdx < numTrainingEntries; entryIdx++ )
-	{
-		Data.TrainingSet.push_back( Entries[entryIdx] );
-	}
-
-	// Generalization set
-	for ( ; entryIdx < numTrainingEntries + numGeneralizationEntries; entryIdx++ )
-	{
-		Data.GeneralizationSet.push_back( Entries[entryIdx] );
-	}
-
-	// Validation set
-	for ( ; entryIdx < numEntries; entryIdx++ )
-	{
-		Data.ValidationSet.push_back( Entries[entryIdx] );
-	}
-
-	//Must check outputsValuesClamped because always returning 0
-	if(ThisNeuralNetwork.GetNbOutputs() > 0)
-	{
-		if (Controller != nullptr)
+		// Not here for changing movement value
+		// ThisNeuralNetwork is changed in NeuralNetworkMain
+		//Must check outputsValuesClamped because always returning 0
+		if(ThisNeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
 		{
-			//AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-			AddMovementInput(GetActorRightVector(), ThisNeuralNetwork.GetOutputsValuesClamped());
-		}
-
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
-			FString::Printf(TEXT("Distance, Output : %f, %d"), Distance,
-				ThisNeuralNetwork.GetOutputsValuesClamped()));
-	}
+			if (Controller != nullptr)
+			{
+				//AddMovementInput(GetActorForwardVector(), MovementVector.Y);
+				AddMovementInput(GetActorRightVector(), ThisNeuralNetwork.GetOutputsValuesClamped());
+			}
 	
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
+				FString::Printf(TEXT("Distance, Output : %f, %d"), Distance,
+					ThisNeuralNetwork.GetOutputsValuesClamped()));
+		}
+	}
 	
 }
 

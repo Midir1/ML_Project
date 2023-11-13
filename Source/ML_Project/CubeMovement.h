@@ -66,4 +66,5 @@ private:
 	FNeuralNetwork ThisNeuralNetwork;
 
 	void NeuralNetworkMain();
+	void NetworkTick();
 };

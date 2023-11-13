@@ -73,7 +73,7 @@ void FNeuralNetwork::InitializeNetwork()
 
 	//Initialization of neurons weights
 	InputsWeights.resize((NbInputs + 1) * (NbHidden + 1));
-	HiddenWeights.resize((NbHidden + 1) * (NbOutputs + 1));
+	HiddenWeights.resize((NbHidden + 1) * NbOutputs);
 
 	DeltaInputsWeights.resize(InputsWeights.size());
 	DeltaHiddenWeights.resize(HiddenWeights.size());
