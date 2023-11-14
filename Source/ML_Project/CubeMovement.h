@@ -21,12 +21,12 @@ class ML_PROJECT_API ACubeMovement : public ACharacter
 
 public:
 	ACubeMovement();
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	void Move(const FInputActionValue& Value);
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 private:
 	float Horizontal = 0.0f;
@@ -63,12 +63,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	double DesiredAccuracy = 90;
 	
-	std::vector<FNeuralNetwork::FTrainingEntry> Entries;
-	FNeuralNetwork::FTrainingData Data;
+	std::vector<FTrainingEntry> Entries;
+	FTrainingData Data;
 
-	FNeuralNetwork ThisNeuralNetwork;
+	FNeuralNetwork NeuralNetwork;
 
-	void NeuralNetworkMain();
-	void NetworkTick();
-	void NetworkUpdateValues();
+	void EntriesTick();
+	void TrainNeuralNetworkTick();
+	void OutputsValuesTick();
 };

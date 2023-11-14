@@ -8,25 +8,6 @@ ACubeMovement::ACubeMovement()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ACubeMovement::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	Timer += DeltaTime;
-
-	if(Timer > TimeWanted)
-	{
-		Timer = 0.0f;
-
-		//Update Entries first
-		NetworkTick();
-		//Train NN
-		NeuralNetworkMain();
-		//Update values with outputs
-		NetworkUpdateValues();
-	}
-}
-
 void ACubeMovement::BeginPlay()
 {
 	Super::BeginPlay();
@@ -41,6 +22,22 @@ void ACubeMovement::BeginPlay()
 	}
 }
 
+void ACubeMovement::Tick(const float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	Timer += DeltaTime;
+
+	if(Timer > TimeWanted)
+	{
+		Timer = 0.0f;
+
+		EntriesTick();
+		TrainNeuralNetworkTick();
+		OutputsValuesTick();
+	}
+}
+
 void ACubeMovement::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
@@ -52,36 +49,25 @@ void ACubeMovement::Move(const FInputActionValue& Value)
 	}
 }
 
-void ACubeMovement::NeuralNetworkMain()
+void ACubeMovement::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	FNeuralNetwork::FNeuronsConfiguration NeuronsConfiguration;
-	NeuronsConfiguration.NbInputs = NbInputs;
-	NeuronsConfiguration.NbHidden = NbHidden;
-	NeuronsConfiguration.NbOutputs = NbOutputs;
-	
-	FNeuralNetwork::FNetworkConfiguration NetworkConfiguration;
-	NetworkConfiguration.LearningRate = LearningRate;
-	NetworkConfiguration.Momentum = Momentum;
-	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
-	NetworkConfiguration.MaxEpochs = MaxEpochs;
-	NetworkConfiguration.DesiredAccuracy = DesiredAccuracy;
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	const FNeuralNetwork NeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
-	ThisNeuralNetwork = NeuralNetwork;
-
-	ThisNeuralNetwork.Train(Data);
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACubeMovement::Move);
+	}
 }
 
-void ACubeMovement::NetworkTick()
+void ACubeMovement::EntriesTick()
 {
 	//First doing with only horizontal axis : Y axis
 	//const FVector Distance = Sphere->GetActorLocation() - GetActorLocation();
 	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
-
-	//Condition
+	
 	if(Distance != 0.0f)
 	{
-		Entries.push_back(FNeuralNetwork::FTrainingEntry());
+		Entries.push_back(FTrainingEntry());
 
 		uint32 i = 0;
 		
@@ -96,12 +82,12 @@ void ACubeMovement::NetworkTick()
 				//Right : D
 				if(Distance > 0.0f)
 				{
-					Entries.back().ExpectedOutputs.push_back(1.0f);
+					Entries.back().ExpectedOutputs.push_back(1.0);
 				}
 				//Left : Q
 				else
 				{
-					Entries.back().ExpectedOutputs.push_back(-1.0f);
+					Entries.back().ExpectedOutputs.push_back(-1.0);
 				}
 			}
 
@@ -110,25 +96,22 @@ void ACubeMovement::NetworkTick()
 		
 		if(!Entries.empty())
 		{
-			// Temp WIP
-			// Training set
-			int32 const numEntries = Entries.size();
-			int32 const numTrainingEntries  = static_cast<int32>(0.6 * numEntries);
-			int32 const numGeneralizationEntries = static_cast<int32>(ceil(0.2 * numEntries));
+			// TODO : Not good values
+			auto NumEntries = Entries.size();
+			auto NumTrainingEntries = (NumEntries == 1) ? 1 : 0.6f * NumEntries;
+			auto NumGeneralizationEntries = ceil(0.2f * NumEntries);
 			
-			for (int32 j = 0; j < numTrainingEntries; j++)
+			for (int32 x = 0; x < NumTrainingEntries; x++)
 			{
-				Data.TrainingSet.push_back(Entries[j]);
+				Data.TrainingSet.push_back(Entries[x]);
 			}
-
-			// Generalization set
-			for (int32 x = 0 ; x < numTrainingEntries + numGeneralizationEntries; x++)
+			
+			for (int32 y = 0 ; y < NumTrainingEntries + NumGeneralizationEntries; y++)
 			{
-				Data.GeneralizationSet.push_back(Entries[x]);
+				Data.GeneralizationSet.push_back(Entries[y]);
 			}
-
-			// Validation set
-			for (int32 z = 0 ; z < numEntries; z++)
+			
+			for (int32 z = 0 ; z < NumEntries; z++)
 			{
 				Data.ValidationSet.push_back(Entries[z]);
 			}
@@ -136,33 +119,38 @@ void ACubeMovement::NetworkTick()
 	}
 }
 
-void ACubeMovement::NetworkUpdateValues()
+void ACubeMovement::TrainNeuralNetworkTick()
+{
+	FNeuronsConfiguration NeuronsConfiguration;
+	NeuronsConfiguration.NbInputs = NbInputs;
+	NeuronsConfiguration.NbHidden = NbHidden;
+	NeuronsConfiguration.NbOutputs = NbOutputs;
+	
+	FNetworkConfiguration NetworkConfiguration;
+	NetworkConfiguration.LearningRate = LearningRate;
+	NetworkConfiguration.Momentum = Momentum;
+	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
+	NetworkConfiguration.MaxEpochs = MaxEpochs;
+	NetworkConfiguration.DesiredAccuracy = DesiredAccuracy;
+	
+	NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
+	NeuralNetwork.Train(Data);
+}
+
+void ACubeMovement::OutputsValuesTick()
 {
 	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
 	
-	// Not here for changing movement value
-	// ThisNeuralNetwork is changed in NeuralNetworkMain
-	//Must check outputsValuesClamped because always returning 0
-	if(ThisNeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
+	if(NeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
 	{
 		if (Controller != nullptr)
 		{
 			//AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-			AddMovementInput(GetActorRightVector(), ThisNeuralNetwork.GetOutputsValuesClamped());
+			AddMovementInput(GetActorRightVector(), NeuralNetwork.GetOutputsValuesClamped());
 		}
 	
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
 			FString::Printf(TEXT("Distance, Output : %f, %d"), Distance,
-				ThisNeuralNetwork.GetOutputsValuesClamped()));
-	}
-}
-
-void ACubeMovement::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACubeMovement::Move);
+				NeuralNetwork.GetOutputsValuesClamped()));
 	}
 }

@@ -2,47 +2,47 @@
 
 #include <vector>
 
+struct FTrainingEntry
+{
+	std::vector<double> Inputs;
+	std::vector<double> ExpectedOutputs;
+};
+
+typedef std::vector<FTrainingEntry> FTrainingSet;
+
+struct FTrainingData
+{
+	FTrainingSet TrainingSet;
+	FTrainingSet GeneralizationSet;
+	FTrainingSet ValidationSet;
+};
+	
+struct FNeuronsConfiguration
+{
+	uint32 NbInputs = 0;
+	uint32 NbHidden = 0;
+	uint32 NbOutputs = 0;
+};
+
+struct FNetworkConfiguration
+{
+	// Learning params
+	double LearningRate = 0.001;
+	double Momentum = 0.9;
+	bool UseBatchLearning = false;
+
+	// Stopping conditions
+	uint32 MaxEpochs = 150;
+	double DesiredAccuracy = 90;
+};
+
 class FNeuralNetwork
 {
-public:
-
-	struct FTrainingEntry
-	{
-		std::vector<double> Inputs;
-		std::vector<uint32> ExpectedOutputs;
-	};
-
-	typedef std::vector<FTrainingEntry> FTrainingSet;
-
-	struct FTrainingData
-	{
-		FTrainingSet TrainingSet;
-		FTrainingSet GeneralizationSet;
-		FTrainingSet ValidationSet;
-	};
 	
-	//Basic struct to declare numbers of neurons in InputsLayer, HiddenLayer and OutputsLayer
-	struct FNeuronsConfiguration
-	{
-		uint32 NbInputs;
-		uint32 NbHidden;
-		uint32 NbOutputs;
-	};
-
-	struct FNetworkConfiguration
-	{
-		// Learning params
-		double LearningRate = 0.001;
-		double Momentum = 0.9;
-		bool UseBatchLearning = false;
-
-		// Stopping conditions
-		uint32 MaxEpochs = 150;
-		double DesiredAccuracy = 90;
-	};
-
+public:
+	
+	//Constructors used for initialization
 	FNeuralNetwork();
-	//Constructors for initialization
 	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
 		FNetworkConfiguration const& NetworkConfiguration);
 	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
@@ -56,7 +56,7 @@ public:
 		return OutputsValuesClamped.back();
 	}
 
-	int GetNbOutputs() const
+	uint32 GetNbOutputs() const
 	{
 		return NbOutputs;
 	}
@@ -64,9 +64,9 @@ public:
 private:
 
 	//Neurons
-	uint32 NbInputs;
-	uint32 NbHidden;
-	uint32 NbOutputs;
+	uint32 NbInputs = 0;
+	uint32 NbHidden = 0;
+	uint32 NbOutputs = 0;
 
 	std::vector<double> InputsValues;
 	std::vector<double> HiddenValues;
@@ -83,19 +83,19 @@ private:
 	std::vector<double> ErrorGradientsOutputs;
 	
 	//Training Settings
-	double LearningRate;
-	double Momentum;
-	double DesiredAccuracy;
-	uint32 MaxEpochs;
-	bool UseBatchLearning;
+	double LearningRate = 0;
+	double Momentum = 0;
+	double DesiredAccuracy = 0;
+	uint32 MaxEpochs = 0 ;
+	bool UseBatchLearning = false;
 
-	uint32 CurrentEpoch;  
-	double TrainingSetAccuracy;
-	double ValidationSetAccuracy;
-	double GeneralizationSetAccuracy;
-	double TrainingSetMse;
-	double ValidationSetMse;
-	double GeneralizationSetMse;
+	uint32 CurrentEpoch = 0;  
+	double TrainingSetAccuracy = 0;
+	double ValidationSetAccuracy = 0;
+	double GeneralizationSetAccuracy = 0;
+	double TrainingSetMse = 0;
+	double ValidationSetMse = 0;
+	double GeneralizationSetMse = 0;
 
 	void InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration);
 	void InitializeNetwork();
@@ -108,7 +108,7 @@ private:
 	double GetHiddenErrorGradient(uint32 HiddenIndex) const;
 
 	void RunEpoch(FTrainingSet const& TrainingSet);
-	void Backpropagation(std::vector<uint32> const& ExpectedOutputs);
+	void Backpropagation(std::vector<double> const& ExpectedOutputs);
 	void UpdateWeights();
 
 	void GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, double& Accuracy, double& Mse);

@@ -1,10 +1,7 @@
 ﻿#include "NeuralNetwork.h"
 #include "Math/UnrealMathUtility.h"
 
-FNeuralNetwork::FNeuralNetwork()
-{
-	//Don't know why + Have To remove from AActor
-}
+FNeuralNetwork::FNeuralNetwork() {}
 
 FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
                                FNetworkConfiguration const& NetworkConfiguration)
@@ -26,25 +23,17 @@ FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration
 
 void FNeuralNetwork::Train(FTrainingData const& TrainingData)
 {
-	// Reset
-	CurrentEpoch = 0;
-	TrainingSetAccuracy = 0;
-	ValidationSetAccuracy = 0;
-	GeneralizationSetAccuracy = 0;
-	TrainingSetAccuracy = 0;
-	ValidationSetMse = 0;
-	GeneralizationSetMse = 0;
-
-	// Here crash
-	while((TrainingSetAccuracy < DesiredAccuracy || GeneralizationSetAccuracy < DesiredAccuracy)
+	if((TrainingSetAccuracy < DesiredAccuracy || GeneralizationSetAccuracy < DesiredAccuracy)
 		&& CurrentEpoch < MaxEpochs)
 	{
 		RunEpoch(TrainingData.TrainingSet);
 		GetSetAccuracyAndMse(TrainingData.GeneralizationSet, GeneralizationSetAccuracy, GeneralizationSetMse);
 		CurrentEpoch++;
 	}
-
-	GetSetAccuracyAndMse(TrainingData.ValidationSet, ValidationSetAccuracy, ValidationSetMse);
+	else
+	{
+		GetSetAccuracyAndMse(TrainingData.ValidationSet, ValidationSetAccuracy, ValidationSetMse);
+	}
 }
 
 void FNeuralNetwork::InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration)
@@ -218,7 +207,7 @@ void FNeuralNetwork::RunEpoch(FTrainingSet const& TrainingSet)
 	TrainingSetMse = Mse / (NbOutputs * TrainingSet.size());
 }
 
-void FNeuralNetwork::Backpropagation(std::vector<uint32> const& ExpectedOutputs)
+void FNeuralNetwork::Backpropagation(std::vector<double> const& ExpectedOutputs)
 {
 	for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
 	{
@@ -227,7 +216,7 @@ void FNeuralNetwork::Backpropagation(std::vector<uint32> const& ExpectedOutputs)
 		
 		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
 		{
-			int32_t const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
+			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
 			
 			if (UseBatchLearning)
 			{
@@ -248,7 +237,7 @@ void FNeuralNetwork::Backpropagation(std::vector<uint32> const& ExpectedOutputs)
 		
 		for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
 		{
-			int32_t const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
+			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
 			
 			if (UseBatchLearning)
 			{
@@ -275,7 +264,7 @@ void FNeuralNetwork::UpdateWeights()
 	{
 		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
 		{
-			int32_t const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
+			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
 			InputsWeights[WeightIndex] += DeltaInputsWeights[WeightIndex];
 			
 			if (UseBatchLearning)
@@ -289,7 +278,7 @@ void FNeuralNetwork::UpdateWeights()
 	{
 		for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
 		{
-			int32_t const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
+			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
 			HiddenWeights[WeightIndex] += DeltaHiddenWeights[WeightIndex];
 			
 			if (UseBatchLearning)
@@ -329,6 +318,6 @@ void FNeuralNetwork::GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, doubl
 		}
 	}
 
-	Accuracy = 100.0f - ( NbIncorrectResults / TrainingSet.size() * 100.0);
+	Accuracy = 100.0f - (NbIncorrectResults / TrainingSet.size() * 100.0);
 	Mse = Mse / (NbOutputs * TrainingSet.size());
 }
