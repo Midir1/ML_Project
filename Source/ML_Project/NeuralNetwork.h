@@ -97,9 +97,9 @@ private:
 	double ValidationSetMse = 0;
 	double GeneralizationSetMse = 0;
 
-	void InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration);
+	void InitializeNbNeurons(FNeuronsConfiguration const NeuronsConfiguration);
 	void InitializeNetwork();
-	void InitializeNetworkConfiguration(FNetworkConfiguration const& NetworkConfiguration);
+	void InitializeNetworkConfiguration(FNetworkConfiguration const NetworkConfiguration);
 	void InitializeWeights();
 	void LoadWeights(std::vector<double> const& Weight);
 

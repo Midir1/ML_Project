@@ -65,10 +65,12 @@ private:
 	
 	std::vector<FTrainingEntry> Entries;
 	FTrainingData Data;
+	FNeuronsConfiguration NeuronsConfiguration;
+	FNetworkConfiguration NetworkConfiguration;
 
 	FNeuralNetwork NeuralNetwork;
 
+	void InitializeNeuralNetwork();
 	void EntriesTick();
-	void TrainNeuralNetworkTick();
 	void OutputsValuesTick();
 };

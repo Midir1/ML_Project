@@ -20,6 +20,8 @@ void ACubeMovement::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	InitializeNeuralNetwork();
 }
 
 void ACubeMovement::Tick(const float DeltaTime)
@@ -33,8 +35,8 @@ void ACubeMovement::Tick(const float DeltaTime)
 		Timer = 0.0f;
 
 		EntriesTick();
-		TrainNeuralNetworkTick();
-		OutputsValuesTick();
+		// NeuralNetwork.Train(Data);
+		// OutputsValuesTick();
 	}
 }
 
@@ -57,6 +59,21 @@ void ACubeMovement::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACubeMovement::Move);
 	}
+}
+
+void ACubeMovement::InitializeNeuralNetwork()
+{
+	NeuronsConfiguration.NbInputs = NbInputs;
+	NeuronsConfiguration.NbHidden = NbHidden;
+	NeuronsConfiguration.NbOutputs = NbOutputs;
+	
+	NetworkConfiguration.LearningRate = LearningRate;
+	NetworkConfiguration.Momentum = Momentum;
+	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
+	NetworkConfiguration.MaxEpochs = MaxEpochs;
+	NetworkConfiguration.DesiredAccuracy = DesiredAccuracy;
+	
+	NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
 }
 
 void ACubeMovement::EntriesTick()
@@ -96,45 +113,26 @@ void ACubeMovement::EntriesTick()
 		
 		if(!Entries.empty())
 		{
-			// TODO : Not good values
-			auto NumEntries = Entries.size();
-			auto NumTrainingEntries = (NumEntries == 1) ? 1 : 0.6f * NumEntries;
-			auto NumGeneralizationEntries = ceil(0.2f * NumEntries);
+			size_t const NbEntries = Entries.size();
+			size_t const NbTrainingEntries = 0.6f * NbEntries;
+			size_t const NbGeneralizationEntries = ceil(0.2f * NbEntries);
 			
-			for (int32 x = 0; x < NumTrainingEntries; x++)
+			for (size_t x = 0; x < NbTrainingEntries; x++)
 			{
 				Data.TrainingSet.push_back(Entries[x]);
 			}
 			
-			for (int32 y = 0 ; y < NumTrainingEntries + NumGeneralizationEntries; y++)
+			for (size_t y = 0 ; y < NbTrainingEntries + NbGeneralizationEntries; y++)
 			{
 				Data.GeneralizationSet.push_back(Entries[y]);
 			}
 			
-			for (int32 z = 0 ; z < NumEntries; z++)
+			for (size_t z = 0 ; z < NbEntries; z++)
 			{
 				Data.ValidationSet.push_back(Entries[z]);
 			}
 		}
 	}
-}
-
-void ACubeMovement::TrainNeuralNetworkTick()
-{
-	FNeuronsConfiguration NeuronsConfiguration;
-	NeuronsConfiguration.NbInputs = NbInputs;
-	NeuronsConfiguration.NbHidden = NbHidden;
-	NeuronsConfiguration.NbOutputs = NbOutputs;
-	
-	FNetworkConfiguration NetworkConfiguration;
-	NetworkConfiguration.LearningRate = LearningRate;
-	NetworkConfiguration.Momentum = Momentum;
-	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
-	NetworkConfiguration.MaxEpochs = MaxEpochs;
-	NetworkConfiguration.DesiredAccuracy = DesiredAccuracy;
-	
-	NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
-	NeuralNetwork.Train(Data);
 }
 
 void ACubeMovement::OutputsValuesTick()
