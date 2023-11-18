@@ -5,8 +5,8 @@
 #include "GameFramework/Character.h"
 #include "CubeMovement.generated.h"
 
-struct FInputActionValue;
 class UInputComponent;
+struct FInputActionValue;
 
 UCLASS()
 class ML_PROJECT_API ACubeMovement : public ACharacter
@@ -33,8 +33,8 @@ private:
 	float Vertical = 0.0f;
 	FVector Movement = FVector::Zero();
 
-	float Timer = 0.0f;
-	float TimeWanted = 1.0f;
+	// float Timer = 0.0f;
+	// float TimeWanted = 0.1f;
 
 	UPROPERTY(EditAnywhere)
 	AActor* Sphere = nullptr;
@@ -63,7 +63,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	double DesiredAccuracy = 90;
 	
-	std::vector<FTrainingEntry> Entries;
+	TArray<FTrainingEntry> Entries;
 	FTrainingData Data;
 	FNeuronsConfiguration NeuronsConfiguration;
 	FNetworkConfiguration NetworkConfiguration;

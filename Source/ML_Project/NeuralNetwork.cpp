@@ -6,13 +6,9 @@ FNeuralNetwork::FNeuralNetwork() {}
 FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
                                FNetworkConfiguration const& NetworkConfiguration)
 {
-	// NbInputs = NeuronsConfiguration.NbInputs;
-	// NbHidden = NeuronsConfiguration.NbHidden;
-	// NbOutputs = NeuronsConfiguration.NbOutputs;
-
-	NbInputs = 1;
-	NbHidden = 1;
-	NbOutputs = 1;
+	NbInputs = NeuronsConfiguration.NbInputs;
+	NbHidden = NeuronsConfiguration.NbHidden;
+	NbOutputs = NeuronsConfiguration.NbOutputs;
 
 	InitializeNetwork();
 	
@@ -26,15 +22,11 @@ FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration
 }
 
 FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
-	FNetworkConfiguration const& NetworkConfiguration, std::vector<double> const& Weights)
+	FNetworkConfiguration const& NetworkConfiguration, TArray<double> const& Weights)
 {
-	// NbInputs = NeuronsConfiguration.NbInputs;
-	// NbHidden = NeuronsConfiguration.NbHidden;
-	// NbOutputs = NeuronsConfiguration.NbOutputs;
-
-	NbInputs = 1;
-	NbHidden = 1;
-	NbOutputs = 1;
+	NbInputs = NeuronsConfiguration.NbInputs;
+	NbHidden = NeuronsConfiguration.NbHidden;
+	NbOutputs = NeuronsConfiguration.NbOutputs;
 	
 	InitializeNetwork();
 	
@@ -64,51 +56,50 @@ void FNeuralNetwork::Train(FTrainingData const& TrainingData)
 
 void FNeuralNetwork::InitializeNetwork()
 {
-	//Resizing the neurons values of InputLayer and HiddenLayer to add bias neurons
-	InputsValues.resize(NbInputs + 1);
-	HiddenValues.resize(NbHidden + 1);
-	OutputsValues.resize(NbOutputs);
-	OutputsValuesClamped.resize(NbOutputs);
-
-	//Set bias values
-	InputsValues.back() = -1.0;
-	HiddenValues.back() = -1.0;
+	// Resizing the neurons values of InputLayer and HiddenLayer to add bias neurons
+	InputsValues.SetNum(NbInputs + 1);
+	HiddenValues.SetNum(NbHidden + 1);
+	OutputsValues.SetNum(NbOutputs);
+	OutputsValuesClamped.SetNum(NbOutputs);
 	
-	InputsWeights.resize((NbInputs + 1) * (NbHidden + 1));
-	HiddenWeights.resize((NbHidden + 1) * NbOutputs);
+	//Set bias values
+	InputsValues.Last() = -1.0;
+	HiddenValues.Last() = -1.0;
+	
+	InputsWeights.SetNum((NbInputs + 1) * (NbHidden + 1));
+	HiddenWeights.SetNum((NbHidden + 1) * NbOutputs);
 
-	DeltaInputsWeights.resize(InputsWeights.size());
-	DeltaHiddenWeights.resize(HiddenWeights.size());
-	ErrorGradientsHidden.resize(HiddenValues.size());
-	ErrorGradientsOutputs.resize(OutputsValues.size());
+	DeltaInputsWeights.SetNum(InputsWeights.Num());
+	DeltaHiddenWeights.SetNum(HiddenWeights.Num());
+	ErrorGradientsHidden.SetNum(HiddenValues.Num());
+	ErrorGradientsOutputs.SetNum(OutputsValues.Num());
 }
 
 void FNeuralNetwork::InitializeWeights()
 {
-	// TODO : zeubi crash
 	//RandRange for random, check other method for better random
 	for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
 	{
-		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
+		for (uint32 HiddenIndex = 0; HiddenIndex < NbHidden; HiddenIndex++)
 		{
-			uint32 WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
-			double Weight = FMath::RandRange(-0.5, 0.5);
+			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
+			double const Weight = FMath::RandRange(-1.0, 1.0);
 			InputsWeights[WeightIndex] = Weight;
 		}
 	}
 
-	// for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
-	// {
-	// 	for (uint32 OutputIndex = 0; OutputIndex <= NbOutputs; OutputIndex++)
-	// 	{
-	// 		uint32 WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
-	// 		double Weight = FMath::RandRange(-0.5, 0.5);
-	// 		HiddenWeights[WeightIndex] = Weight;
-	// 	}
-	// }
+	for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
+	{
+		for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
+		{
+			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
+			double const Weight = FMath::RandRange(-1.0, 1.0);
+			HiddenWeights[WeightIndex] = Weight;
+		}
+	}
 }
 
-void FNeuralNetwork::LoadWeights(std::vector<double> const& Weight)
+void FNeuralNetwork::LoadWeights(TArray<double> const& Weight)
 {
 	for (uint32 InputIndex = 0; InputIndex < NbInputs * NbHidden; InputIndex++)
 	{
@@ -121,15 +112,18 @@ void FNeuralNetwork::LoadWeights(std::vector<double> const& Weight)
 	}
 }
 
-std::vector<int32> const& FNeuralNetwork::Evaluate(std::vector<double> const& Input)
+TArray<double> const& FNeuralNetwork::Evaluate(TArray<double> const& Input)
 {
-	memcpy(InputsValues.data(), Input.data(), Input.size() * sizeof(double));
+	for (int32 i = 0; i < Input.Num(); i++)
+	{
+		InputsValues[i] = Input[i];
+	}
 
 	for (uint32 HiddenIndex = 0; HiddenIndex < NbHidden; HiddenIndex++)
 	{
 		HiddenValues[HiddenIndex] = 0;
 		
-		for (uint32 InputIndex = 0; InputIndex < NbInputs; InputIndex++)
+		for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
 		{
 			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
 			HiddenValues[HiddenIndex] += InputsValues[InputIndex] * InputsWeights[WeightIndex];
@@ -142,7 +136,7 @@ std::vector<int32> const& FNeuralNetwork::Evaluate(std::vector<double> const& In
 	{
 		OutputsValues[OutputIndex] = 0;
 		
-		for (uint32 HiddenIndex = 0; HiddenIndex < NbHidden; HiddenIndex++)
+		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
 		{
 			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
 			OutputsValues[OutputIndex] += HiddenValues[HiddenIndex] * HiddenWeights[WeightIndex];
@@ -201,11 +195,11 @@ void FNeuralNetwork::RunEpoch(FTrainingSet const& TrainingSet)
 		UpdateWeights();
 	}
 	
-	TrainingSetAccuracy = 100.0 - (IncorrectEntries / TrainingSet.size() * 100.0);
-	TrainingSetMse = Mse / (NbOutputs * TrainingSet.size());
+	TrainingSetAccuracy = 100.0 - (IncorrectEntries / TrainingSet.Num() * 100.0);
+	TrainingSetMse = Mse / (NbOutputs * TrainingSet.Num());
 }
 
-void FNeuralNetwork::Backpropagation(std::vector<double> const& ExpectedOutputs)
+void FNeuralNetwork::Backpropagation(TArray<double> const& ExpectedOutputs)
 {
 	for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
 	{
@@ -316,6 +310,6 @@ void FNeuralNetwork::GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, doubl
 		}
 	}
 
-	Accuracy = 100.0f - (NbIncorrectResults / TrainingSet.size() * 100.0);
-	Mse = Mse / (NbOutputs * TrainingSet.size());
+	Accuracy = 100.0f - (NbIncorrectResults / TrainingSet.Num() * 100.0);
+	Mse = Mse / (NbOutputs * TrainingSet.Num());
 }

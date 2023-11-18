@@ -1,59 +1,22 @@
 ﻿#pragma once
 
-#include <vector>
-
-struct FTrainingEntry
-{
-	std::vector<double> Inputs;
-	std::vector<double> ExpectedOutputs;
-};
-
-typedef std::vector<FTrainingEntry> FTrainingSet;
-
-struct FTrainingData
-{
-	FTrainingSet TrainingSet;
-	FTrainingSet GeneralizationSet;
-	FTrainingSet ValidationSet;
-};
-	
-struct FNeuronsConfiguration
-{
-	uint32 NbInputs = 0;
-	uint32 NbHidden = 0;
-	uint32 NbOutputs = 0;
-};
-
-struct FNetworkConfiguration
-{
-	// Learning params
-	double LearningRate = 0.001;
-	double Momentum = 0.9;
-	bool UseBatchLearning = false;
-
-	// Stopping conditions
-	uint32 MaxEpochs = 150;
-	double DesiredAccuracy = 90;
-};
+#include "Structs.h"
 
 class FNeuralNetwork
 {
-	
 public:
-	
 	//Constructors used for initialization
 	FNeuralNetwork();
 	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
 		FNetworkConfiguration const& NetworkConfiguration);
 	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
-		FNetworkConfiguration const& NetworkConfiguration, std::vector<double> const& Weights);
+		FNetworkConfiguration const& NetworkConfiguration, TArray<double> const& Weights);
 
 	void Train(FTrainingData const& TrainingData);
-
-	//temp
-	int32 GetOutputsValuesClamped() const
+	
+	double GetOutputsValuesClamped() const
 	{
-		return OutputsValuesClamped.back();
+		return OutputsValuesClamped.Last();
 	}
 
 	uint32 GetNbOutputs() const
@@ -62,25 +25,24 @@ public:
 	}
 
 private:
-
 	//Neurons
 	uint32 NbInputs = 0;
 	uint32 NbHidden = 0;
 	uint32 NbOutputs = 0;
 
-	std::vector<double> InputsValues;
-	std::vector<double> HiddenValues;
-	std::vector<double> OutputsValues;
-	std::vector<int32> OutputsValuesClamped;
+	TArray<double> InputsValues;
+	TArray<double> HiddenValues;
+	TArray<double> OutputsValues;
+	TArray<double> OutputsValuesClamped;
 
-	std::vector<double> InputsWeights;
-	std::vector<double> HiddenWeights;
+	TArray<double> InputsWeights;
+	TArray<double> HiddenWeights;
 
-	std::vector<double> DeltaInputsWeights;
-	std::vector<double> DeltaHiddenWeights;
+	TArray<double> DeltaInputsWeights;
+	TArray<double> DeltaHiddenWeights;
 
-	std::vector<double> ErrorGradientsHidden;
-	std::vector<double> ErrorGradientsOutputs;
+	TArray<double> ErrorGradientsHidden;
+	TArray<double> ErrorGradientsOutputs;
 	
 	//Training Settings
 	double LearningRate = 0;
@@ -97,18 +59,18 @@ private:
 	double ValidationSetMse = 0;
 	double GeneralizationSetMse = 0;
 
-	void InitializeNbNeurons(FNeuronsConfiguration const NeuronsConfiguration);
+	//void InitializeNbNeurons(FNeuronsConfiguration const NeuronsConfiguration);
 	void InitializeNetwork();
-	void InitializeNetworkConfiguration(FNetworkConfiguration const NetworkConfiguration);
+	//void InitializeNetworkConfiguration(FNetworkConfiguration const NetworkConfiguration);
 	void InitializeWeights();
-	void LoadWeights(std::vector<double> const& Weight);
+	void LoadWeights(TArray<double> const& Weight);
 
-	std::vector<int32> const& Evaluate(std::vector<double> const& Input);
+	TArray<double> const& Evaluate(TArray<double> const& Input);
 
 	double GetHiddenErrorGradient(uint32 HiddenIndex) const;
 
 	void RunEpoch(FTrainingSet const& TrainingSet);
-	void Backpropagation(std::vector<double> const& ExpectedOutputs);
+	void Backpropagation(TArray<double> const& ExpectedOutputs);
 	void UpdateWeights();
 
 	void GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, double& Accuracy, double& Mse);
@@ -120,10 +82,10 @@ private:
 	}
 
 	//Clamp value because of sigmoïd asymptotic nature (can't reach 0 and 1 values)
-	static int32 ClampOutputValue(const double X)
+	static double ClampOutputValue(const double X)
 	{
-		if (X < 0.1) return 0;
-		if (X > 0.9) return 1;
+		if (X < 0.1) return 0.0;
+		if (X > 0.9) return 1.0;
 		return X;
 	}
 
@@ -139,12 +101,12 @@ private:
 	}
 
 	//Weights Accessors
-	std::vector<double> const& GetInputsWeights() const
+	TArray<double> const& GetInputsWeights() const
 	{
 		return InputsWeights;
 	}
 
-	std::vector<double> const& GetHiddenWeights() const
+	TArray<double> const& GetHiddenWeights() const
 	{
 		return HiddenWeights;
 	}

@@ -28,16 +28,20 @@ void ACubeMovement::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Timer += DeltaTime;
+	// Timer += DeltaTime;
+	//
+	// if(Timer > TimeWanted)
+	// {
+	// 	Timer = 0.0f;
+	//
+	// 	EntriesTick();
+	// 	NeuralNetwork.Train(Data);
+	// 	OutputsValuesTick();
+	// }
 
-	if(Timer > TimeWanted)
-	{
-		Timer = 0.0f;
-
-		EntriesTick();
-		// NeuralNetwork.Train(Data);
-		// OutputsValuesTick();
-	}
+	EntriesTick();
+	NeuralNetwork.Train(Data);
+	OutputsValuesTick();
 }
 
 void ACubeMovement::Move(const FInputActionValue& Value)
@@ -84,52 +88,52 @@ void ACubeMovement::EntriesTick()
 	
 	if(Distance != 0.0f)
 	{
-		Entries.push_back(FTrainingEntry());
+		Entries.Add(FTrainingEntry());
 
 		uint32 i = 0;
 		
 		while (i < NbInputs + NbOutputs)
 		{
-			if(Entries.back().Inputs.size() < NbInputs)
+			if(static_cast<uint32>(Entries.Last().Inputs.Num()) < NbInputs)
 			{
-				Entries.back().Inputs.push_back(Distance);
+				Entries.Last().Inputs.Add(Distance);
 			}
 			else
 			{
 				//Right : D
 				if(Distance > 0.0f)
 				{
-					Entries.back().ExpectedOutputs.push_back(1.0);
+					Entries.Last().ExpectedOutputs.Add(1.0);
 				}
 				//Left : Q
 				else
 				{
-					Entries.back().ExpectedOutputs.push_back(-1.0);
+					Entries.Last().ExpectedOutputs.Add(0.0);
 				}
 			}
 
 			i++;
 		}
 		
-		if(!Entries.empty())
+		if(Entries.Num() > 0)
 		{
-			size_t const NbEntries = Entries.size();
+			size_t const NbEntries = Entries.Num();
 			size_t const NbTrainingEntries = 0.6f * NbEntries;
 			size_t const NbGeneralizationEntries = ceil(0.2f * NbEntries);
 			
 			for (size_t x = 0; x < NbTrainingEntries; x++)
 			{
-				Data.TrainingSet.push_back(Entries[x]);
+				Data.TrainingSet.Add(Entries[x]);
 			}
 			
 			for (size_t y = 0 ; y < NbTrainingEntries + NbGeneralizationEntries; y++)
 			{
-				Data.GeneralizationSet.push_back(Entries[y]);
+				Data.GeneralizationSet.Add(Entries[y]);
 			}
 			
 			for (size_t z = 0 ; z < NbEntries; z++)
 			{
-				Data.ValidationSet.push_back(Entries[z]);
+				Data.ValidationSet.Add(Entries[z]);
 			}
 		}
 	}
@@ -141,14 +145,11 @@ void ACubeMovement::OutputsValuesTick()
 	
 	if(NeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
 	{
-		if (Controller != nullptr)
-		{
-			//AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-			AddMovementInput(GetActorRightVector(), NeuralNetwork.GetOutputsValuesClamped());
-		}
+		float const MoveValue = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()) - 1.0f;
+		
+		AddMovementInput(GetActorRightVector(), MoveValue);
 	
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
-			FString::Printf(TEXT("Distance, Output : %f, %d"), Distance,
-				NeuralNetwork.GetOutputsValuesClamped()));
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow,
+			FString::Printf(TEXT("Distance, Output : %f, %f"), Distance, MoveValue));
 	}
 }
