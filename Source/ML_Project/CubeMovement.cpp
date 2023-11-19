@@ -1,8 +1,5 @@
 #include "CubeMovement.h"
 
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-
 ACubeMovement::ACubeMovement()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -12,14 +9,7 @@ void ACubeMovement::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
-			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+	
 
 	InitializeNeuralNetwork();
 }
@@ -28,40 +18,16 @@ void ACubeMovement::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Timer += DeltaTime;
-	//
-	// if(Timer > TimeWanted)
-	// {
-	// 	Timer = 0.0f;
-	//
-	// 	EntriesTick();
-	// 	NeuralNetwork.Train(Data);
-	// 	OutputsValuesTick();
-	// }
-
-	EntriesTick();
-	NeuralNetwork.Train(Data);
-	OutputsValuesTick();
-}
-
-void ACubeMovement::Move(const FInputActionValue& Value)
-{
-	const FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
+	if(!NeuralNetwork.IsTrainingOver())
 	{
-		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-		AddMovementInput(GetActorRightVector(), MovementVector.X);
+		EntriesTick();
+		NeuralNetwork.Train(Data);
+		OutputsValuesTick(false);
 	}
-}
-
-void ACubeMovement::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	else
 	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACubeMovement::Move);
+		NeuralNetwork.Evaluate();
+		OutputsValuesTick(true);
 	}
 }
 
@@ -139,7 +105,7 @@ void ACubeMovement::EntriesTick()
 	}
 }
 
-void ACubeMovement::OutputsValuesTick()
+void ACubeMovement::OutputsValuesTick(bool TrainingOver)
 {
 	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
 	
@@ -148,8 +114,16 @@ void ACubeMovement::OutputsValuesTick()
 		float const MoveValue = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()) - 1.0f;
 		
 		AddMovementInput(GetActorRightVector(), MoveValue);
-	
-		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow,
+
+		if(!TrainingOver)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
 			FString::Printf(TEXT("Distance, Output : %f, %f"), Distance, MoveValue));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green,
+			FString::Printf(TEXT("Distance, Output : %f, %f"), Distance, MoveValue));
+		}
 	}
 }

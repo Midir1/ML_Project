@@ -5,19 +5,10 @@
 #include "GameFramework/Character.h"
 #include "CubeMovement.generated.h"
 
-class UInputComponent;
-struct FInputActionValue;
-
 UCLASS()
 class ML_PROJECT_API ACubeMovement : public ACharacter
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext = nullptr;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction = nullptr;
 
 public:
 	ACubeMovement();
@@ -25,16 +16,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	void Move(const FInputActionValue& Value);
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 private:
 	float Horizontal = 0.0f;
 	float Vertical = 0.0f;
 	FVector Movement = FVector::Zero();
-
-	// float Timer = 0.0f;
-	// float TimeWanted = 0.1f;
 
 	UPROPERTY(EditAnywhere)
 	AActor* Sphere = nullptr;
@@ -72,5 +58,5 @@ private:
 
 	void InitializeNeuralNetwork();
 	void EntriesTick();
-	void OutputsValuesTick();
+	void OutputsValuesTick(bool TrainingOver);
 };

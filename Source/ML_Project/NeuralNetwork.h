@@ -5,7 +5,6 @@
 class FNeuralNetwork
 {
 public:
-	//Constructors used for initialization
 	FNeuralNetwork();
 	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
 		FNetworkConfiguration const& NetworkConfiguration);
@@ -13,10 +12,16 @@ public:
 		FNetworkConfiguration const& NetworkConfiguration, TArray<double> const& Weights);
 
 	void Train(FTrainingData const& TrainingData);
+	TArray<double> const& Evaluate();
 	
 	double GetOutputsValuesClamped() const
 	{
 		return OutputsValuesClamped.Last();
+	}
+
+	bool IsTrainingOver() const
+	{
+		return DoneValidationSet;
 	}
 
 	uint32 GetNbOutputs() const
@@ -59,9 +64,11 @@ private:
 	double ValidationSetMse = 0;
 	double GeneralizationSetMse = 0;
 
-	//void InitializeNbNeurons(FNeuronsConfiguration const NeuronsConfiguration);
+	bool DoneValidationSet = false;
+
+	void InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration);
 	void InitializeNetwork();
-	//void InitializeNetworkConfiguration(FNetworkConfiguration const NetworkConfiguration);
+	void InitializeNetworkConfiguration(FNetworkConfiguration const& NetworkConfiguration);
 	void InitializeWeights();
 	void LoadWeights(TArray<double> const& Weight);
 
