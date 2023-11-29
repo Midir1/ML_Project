@@ -99,7 +99,7 @@ private:
 	//Index Accessors
 	uint32 GetInputWeightIndex(const uint32 InputIndex, const uint32 HiddenIndex) const
 	{
-		return InputIndex * NbHidden + HiddenIndex;
+		return InputIndex * (NbHidden + 1) + HiddenIndex;
 	}
 
 	uint32 GetHiddenWeightIndex(const uint32 HiddenIndex, const uint32 OutputIndex) const

@@ -110,7 +110,7 @@ void FNeuralNetwork::InitializeWeights()
 	//RandRange for random, check others methods for better random
 	for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
 	{
-		for (uint32 HiddenIndex = 0; HiddenIndex < NbHidden; HiddenIndex++)
+		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
 		{
 			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
 			double const Weight = FMath::RandRange(-0.5, 0.5);

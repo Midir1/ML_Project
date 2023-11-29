@@ -9,9 +9,8 @@ void ACubeMovement::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	
-
 	InitializeNeuralNetwork();
+	Timer = MovementTimer;
 }
 
 void ACubeMovement::Tick(const float DeltaTime)
@@ -20,8 +19,15 @@ void ACubeMovement::Tick(const float DeltaTime)
 
 	if(!NeuralNetwork.IsTrainingOver())
 	{
-		EntriesTick();
-		NeuralNetwork.Train(Data);
+		Timer += DeltaTime;
+
+		if(Timer > MovementTimer)
+		{
+			Timer = 0.0f;
+			EntriesTick();
+			NeuralNetwork.Train(Data);
+		}
+		
 		OutputsValuesTick(false);
 	}
 	else
@@ -117,6 +123,7 @@ void ACubeMovement::OutputsValuesTick(bool TrainingOver)
 
 		if(!TrainingOver)
 		{
+			
 			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
 			FString::Printf(TEXT("Distance, Output : %f, %f"), Distance, MoveValue));
 		}
