@@ -1,5 +1,7 @@
 #include "CubeMovement.h"
 
+#include "NeuralNetworkDataWidget.h"
+
 ACubeMovement::ACubeMovement()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -24,10 +26,13 @@ void ACubeMovement::Tick(const float DeltaTime)
 		if(Timer > MovementTimer)
 		{
 			Timer = 0.0f;
-			EntriesTick();
-			NeuralNetwork.Train(Data);
+			
+			// EntriesTick();
+			// NeuralNetwork.Train(Entry);
 		}
 		
+		EntriesTick();
+		NeuralNetwork.Train(Entry);
 		OutputsValuesTick(false);
 	}
 	else
@@ -47,7 +52,6 @@ void ACubeMovement::InitializeNeuralNetwork()
 	NetworkConfiguration.Momentum = Momentum;
 	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
 	NetworkConfiguration.MaxEpochs = MaxEpochs;
-	NetworkConfiguration.DesiredAccuracy = DesiredAccuracy;
 	
 	NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
 }
@@ -55,63 +59,53 @@ void ACubeMovement::InitializeNeuralNetwork()
 void ACubeMovement::EntriesTick()
 {
 	//First doing with only horizontal axis : Y axis
-	//const FVector Distance = Sphere->GetActorLocation() - GetActorLocation();
-	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
+	const FVector Distance = Sphere->GetActorLocation() - GetActorLocation();
 	
-	if(Distance != 0.0f)
+	if(Distance != FVector::Zero())
 	{
-		Entries.Add(FTrainingEntry());
-
+		Entry = FTrainingEntry();
+		
 		uint32 i = 0;
 		
-		while (i < NbInputs + NbOutputs)
+		while (i < 2)
 		{
-			if(static_cast<uint32>(Entries.Last().Inputs.Num()) < NbInputs)
+			if(static_cast<uint32>(Entry.Inputs.Num()) < NbInputs)
 			{
-				Entries.Last().Inputs.Add(Distance);
+				Entry.Inputs.Add(Distance.Y);
+				Entry.Inputs.Add(Distance.X);
 			}
 			else
 			{
 				//Right : D
-				if(Distance > 0.0f)
+				if(Distance.Y > 0.0f)
 				{
-					Entries.Last().ExpectedOutputs.Add(1.0);
+					Entry.ExpectedOutputs.Add(1.0);
 				}
 				//Left : Q
 				else
 				{
-					Entries.Last().ExpectedOutputs.Add(0.0);
+					Entry.ExpectedOutputs.Add(0.0);
+				}
+
+				//Up : Z
+				if(Distance.X > 0.0f)
+				{
+					Entry.ExpectedOutputs.Add(1.0);
+				}
+				//Down : S
+				else
+				{
+					Entry.ExpectedOutputs.Add(0.0);
 				}
 			}
 
 			i++;
 		}
-		
-		if(Entries.Num() > 0)
-		{
-			size_t const NbEntries = Entries.Num();
-			size_t const NbTrainingEntries = 0.6f * NbEntries;
-			size_t const NbGeneralizationEntries = ceil(0.2f * NbEntries);
-			
-			for (size_t x = 0; x < NbTrainingEntries; x++)
-			{
-				Data.TrainingSet.Add(Entries[x]);
-			}
-			
-			for (size_t y = 0 ; y < NbTrainingEntries + NbGeneralizationEntries; y++)
-			{
-				Data.GeneralizationSet.Add(Entries[y]);
-			}
-			
-			for (size_t z = 0 ; z < NbEntries; z++)
-			{
-				Data.ValidationSet.Add(Entries[z]);
-			}
-		}
 	}
 }
 
-void ACubeMovement::OutputsValuesTick(bool TrainingOver)
+//TODO : Check Output Value To Make Cube Move With Two Axis
+void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
 {
 	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
 	
@@ -120,17 +114,6 @@ void ACubeMovement::OutputsValuesTick(bool TrainingOver)
 		float const MoveValue = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()) - 1.0f;
 		
 		AddMovementInput(GetActorRightVector(), MoveValue);
-
-		if(!TrainingOver)
-		{
-			
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow,
-			FString::Printf(TEXT("Distance, Output : %f, %f"), Distance, MoveValue));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green,
-			FString::Printf(TEXT("Distance, Output : %f, %f"), Distance, MoveValue));
-		}
+		NeuralNetworkDataWidget->SetWidgetData(Distance, MoveValue, TrainingOver);
 	}
 }

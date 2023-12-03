@@ -21,18 +21,16 @@ FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration
 	LoadWeights(Weights);
 }
 
-void FNeuralNetwork::Train(FTrainingData const& TrainingData)
+void FNeuralNetwork::Train(FTrainingEntry const& TrainingEntry)
 {
 	if(CurrentEpoch < MaxEpochs)
 	{
-		RunEpoch(TrainingData.TrainingSet);
-		GetSetAccuracyAndMse(TrainingData.GeneralizationSet, GeneralizationSetAccuracy, GeneralizationSetMse);
+		RunEpoch(TrainingEntry);
 		CurrentEpoch++;
 	}
 	else if (!DoneValidationSet)
 	{
 		DoneValidationSet = true;
-		GetSetAccuracyAndMse(TrainingData.ValidationSet, ValidationSetAccuracy, ValidationSetMse);
 	}
 }
 
@@ -102,7 +100,6 @@ void FNeuralNetwork::InitializeNetworkConfiguration(FNetworkConfiguration const&
 	Momentum = NetworkConfiguration.Momentum;
 	UseBatchLearning = NetworkConfiguration.UseBatchLearning;
 	MaxEpochs = NetworkConfiguration.MaxEpochs;
-	DesiredAccuracy = NetworkConfiguration.DesiredAccuracy;
 }
 
 void FNeuralNetwork::InitializeWeights()
@@ -165,41 +162,11 @@ double FNeuralNetwork::GetHiddenErrorGradient(const uint32 HiddenIndex) const
 	return HiddenValues[HiddenIndex] * (1.0 - HiddenValues[HiddenIndex]) * ErrorsWeightedSum;
 }
 
-void FNeuralNetwork::RunEpoch(FTrainingSet const& TrainingSet)
+void FNeuralNetwork::RunEpoch(FTrainingEntry const& TrainingEntry)
 {
-	double IncorrectEntries = 0;
-	double Mse = 0;
-
-	for (FTrainingEntry const& TrainingEntry : TrainingSet)
-	{
-		Evaluate(TrainingEntry.Inputs);
-		Backpropagation(TrainingEntry.ExpectedOutputs);
-		
-		bool ResultCorrect = true;
-		
-		for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
-		{
-			if (OutputsValuesClamped[OutputIndex] != TrainingEntry.ExpectedOutputs[OutputIndex])
-			{
-				ResultCorrect = false;
-			}
-			
-			Mse += pow((OutputsValues[OutputIndex] - TrainingEntry.ExpectedOutputs[OutputIndex]), 2);
-		}
-
-		if (!ResultCorrect)
-		{
-			IncorrectEntries++;
-		}
-	}
-	
-	if (UseBatchLearning)
-	{
-		UpdateWeights();
-	}
-	
-	TrainingSetAccuracy = 100.0 - (IncorrectEntries / TrainingSet.Num() * 100.0);
-	TrainingSetMse = Mse / (NbOutputs * TrainingSet.Num());
+	Evaluate(TrainingEntry.Inputs);
+	Backpropagation(TrainingEntry.ExpectedOutputs);
+	UpdateWeights();
 }
 
 void FNeuralNetwork::Backpropagation(TArray<double> const& ExpectedOutputs)
@@ -282,37 +249,4 @@ void FNeuralNetwork::UpdateWeights()
 			}
 		}
 	}
-}
-
-void FNeuralNetwork::GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, double& Accuracy, double& Mse)
-{
-	Accuracy = 0;
-	Mse = 0;
-
-	double NbIncorrectResults = 0;
-	
-	for (FTrainingEntry const& TrainingEntry : TrainingSet)
-	{
-		Evaluate(TrainingEntry.Inputs);
-		
-		bool CorrectResult = true;
-		
-		for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
-		{
-			if (OutputsValuesClamped[OutputIndex] != TrainingEntry.ExpectedOutputs[OutputIndex])
-			{
-				CorrectResult = false;
-			}
-
-			Mse += pow((OutputsValuesClamped[OutputIndex] - TrainingEntry.ExpectedOutputs[OutputIndex]), 2);
-		}
-
-		if (!CorrectResult)
-		{
-			NbIncorrectResults++;
-		}
-	}
-
-	Accuracy = 100.0f - (NbIncorrectResults / TrainingSet.Num() * 100.0);
-	Mse = Mse / (NbOutputs * TrainingSet.Num());
 }

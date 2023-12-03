@@ -1,14 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "NeuralNetworkDataWidget.generated.h"
 
-/**
- * 
- */
 UCLASS(Abstract)
 class ML_PROJECT_API UNeuralNetworkDataWidget : public UUserWidget
 {
@@ -24,5 +19,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* TrainingText = nullptr;
 
-	void SetWidgetData(FText const& Distance, FText const& Output, FText const& Training) const;
+	void SetWidgetData(const float Distance, const float Output, const bool Training) const;
+
+private:
+	const FLinearColor RedColor = FLinearColor::Red;
+	const FLinearColor GreenColor = FLinearColor::Green;
+	FSlateColor RedSlateColor = FSlateColor(RedColor);
+	FSlateColor GreenSlateColor = FSlateColor(GreenColor);
 };

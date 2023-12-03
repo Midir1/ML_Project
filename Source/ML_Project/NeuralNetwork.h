@@ -11,7 +11,7 @@ public:
 	explicit FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
 		FNetworkConfiguration const& NetworkConfiguration, TArray<double> const& Weights);
 
-	void Train(FTrainingData const& TrainingData);
+	void Train(FTrainingEntry const& TrainingEntry);
 	TArray<double> const& Evaluate();
 	
 	double GetOutputsValuesClamped() const
@@ -52,18 +52,10 @@ private:
 	//Training Settings
 	double LearningRate = 0;
 	double Momentum = 0;
-	double DesiredAccuracy = 0;
-	uint32 MaxEpochs = 0 ;
+	uint32 MaxEpochs = 0;
 	bool UseBatchLearning = false;
 
 	uint32 CurrentEpoch = 0;  
-	double TrainingSetAccuracy = 0;
-	double ValidationSetAccuracy = 0;
-	double GeneralizationSetAccuracy = 0;
-	double TrainingSetMse = 0;
-	double ValidationSetMse = 0;
-	double GeneralizationSetMse = 0;
-
 	bool DoneValidationSet = false;
 
 	void InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration);
@@ -76,11 +68,9 @@ private:
 
 	double GetHiddenErrorGradient(uint32 HiddenIndex) const;
 
-	void RunEpoch(FTrainingSet const& TrainingSet);
+	void RunEpoch(FTrainingEntry const& TrainingEntry);
 	void Backpropagation(TArray<double> const& ExpectedOutputs);
 	void UpdateWeights();
-
-	void GetSetAccuracyAndMse(FTrainingSet const& TrainingSet, double& Accuracy, double& Mse);
 
 	//Sigmoïd function for neuron activation
 	static double Sigmoid(const double X)

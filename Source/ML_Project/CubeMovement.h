@@ -5,6 +5,8 @@
 #include "GameFramework/Character.h"
 #include "CubeMovement.generated.h"
 
+class UNeuralNetworkDataWidget;
+
 UCLASS()
 class ML_PROJECT_API ACubeMovement : public ACharacter
 {
@@ -12,6 +14,9 @@ class ML_PROJECT_API ACubeMovement : public ACharacter
 
 public:
 	ACubeMovement();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UNeuralNetworkDataWidget* NeuralNetworkDataWidget = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,12 +55,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	double MaxEpochs = 200;
-
-	UPROPERTY(EditAnywhere)
-	double DesiredAccuracy = 90;
 	
-	TArray<FTrainingEntry> Entries;
-	FTrainingData Data;
+	FTrainingEntry Entry;
 	FNeuronsConfiguration NeuronsConfiguration;
 	FNetworkConfiguration NetworkConfiguration;
 
@@ -63,5 +64,5 @@ private:
 
 	void InitializeNeuralNetwork();
 	void EntriesTick();
-	void OutputsValuesTick(bool TrainingOver);
+	void OutputsValuesTick(const bool TrainingOver);
 };

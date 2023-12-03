@@ -11,18 +11,6 @@ struct FTrainingEntry
 	TArray<double> ExpectedOutputs;
 };
 
-typedef TArray<FTrainingEntry> FTrainingSet;
-
-USTRUCT()
-struct FTrainingData
-{
-	GENERATED_USTRUCT_BODY();
-	
-	FTrainingSet TrainingSet;
-	FTrainingSet GeneralizationSet;
-	FTrainingSet ValidationSet;
-};
-
 USTRUCT()
 struct FNeuronsConfiguration
 {
@@ -45,5 +33,4 @@ struct FNetworkConfiguration
 
 	// Stopping conditions
 	uint32 MaxEpochs = 150;
-	double DesiredAccuracy = 90;
 };
