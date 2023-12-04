@@ -34,12 +34,3 @@ struct FNetworkConfiguration
 	// Stopping conditions
 	uint32 MaxEpochs = 150;
 };
-
-USTRUCT()
-struct FWeights
-{
-	GENERATED_USTRUCT_BODY();
-	
-	TArray<double> Inputs;
-	TArray<double> Hidden;
-};

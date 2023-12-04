@@ -26,15 +26,10 @@ private:
 	float Horizontal = 0.0f;
 	float Vertical = 0.0f;
 	FVector Movement = FVector::Zero();
-
-	float Timer = 0.0f;
-	//bool JsonSaved = false;
+	bool JsonSaved = false;
 
 	UPROPERTY(EditAnywhere)
 	float TimeDilation = 2.0f;
-	
-	UPROPERTY(EditAnywhere)
-	float MovementTimer = 0.5f;
 	
 	UPROPERTY(EditAnywhere)
 	AActor* Sphere = nullptr;
@@ -63,13 +58,10 @@ private:
 	FTrainingEntry Entry;
 	FNeuronsConfiguration NeuronsConfiguration;
 	FNetworkConfiguration NetworkConfiguration;
-	FWeights WeightsStruct;
 
 	FNeuralNetwork NeuralNetwork;
 
 	void InitializeNeuralNetwork();
 	void EntriesTick();
 	void OutputsValuesTick(const bool TrainingOver);
-
-	void SaveWeightsToJson();
 };

@@ -34,9 +34,30 @@ public:
 		return DoneValidationSet;
 	}
 
+	uint32 GetNbInputs() const
+	{
+		return NbInputs;
+	}
+
+	uint32 GetNbHidden() const
+	{
+		return NbHidden;
+	}
+
 	uint32 GetNbOutputs() const
 	{
 		return NbOutputs;
+	}
+
+	//Weights Accessors
+	TArray<double> const& GetInputsWeights() const
+	{
+		return InputsWeights;
+	}
+
+	TArray<double> const& GetHiddenWeights() const
+	{
+		return HiddenWeights;
 	}
 
 private:
@@ -105,17 +126,6 @@ private:
 	uint32 GetHiddenWeightIndex(const uint32 HiddenIndex, const uint32 OutputIndex) const
 	{
 		return HiddenIndex * NbOutputs + OutputIndex;
-	}
-
-	//Weights Accessors
-	TArray<double> const& GetInputsWeights() const
-	{
-		return InputsWeights;
-	}
-
-	TArray<double> const& GetHiddenWeights() const
-	{
-		return HiddenWeights;
 	}
 
 	static double GetOutputErrorGradient(const double DesiredValue, const double OutputValue)

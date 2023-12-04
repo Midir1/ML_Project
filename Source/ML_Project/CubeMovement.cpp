@@ -1,7 +1,6 @@
 #include "CubeMovement.h"
-
-#include "JsonObjectConverter.h"
 #include "NeuralNetworkDataWidget.h"
+#include "NeuralNetworkJson.h"
 
 ACubeMovement::ACubeMovement()
 {
@@ -13,8 +12,6 @@ void ACubeMovement::BeginPlay()
 	Super::BeginPlay();
 	
 	InitializeNeuralNetwork();
-	Timer = MovementTimer;
-
 	GetWorldSettings()->SetTimeDilation(TimeDilation);
 }
 
@@ -24,16 +21,6 @@ void ACubeMovement::Tick(const float DeltaTime)
 
 	if(!NeuralNetwork.IsTrainingOver())
 	{
-		// Timer += DeltaTime;
-		//
-		// if(Timer > MovementTimer)
-		// {
-		// 	Timer = 0.0f;
-		// 	
-		// 	EntriesTick();
-		// 	NeuralNetwork.Train(Entry);
-		// }
-		
 		EntriesTick();
 		NeuralNetwork.Train(Entry);
 		OutputsValuesTick(false);
@@ -44,7 +31,11 @@ void ACubeMovement::Tick(const float DeltaTime)
 		OutputsValuesTick(true);
 
 		//Every Frame change Function Json location
-		SaveWeightsToJson();
+		if(!JsonSaved)
+		{
+			JsonSaved = true;
+			FNeuralNetworkJson::SerializeToJson(NeuralNetwork);
+		}
 	}
 }
 
@@ -58,6 +49,11 @@ void ACubeMovement::InitializeNeuralNetwork()
 	NetworkConfiguration.Momentum = Momentum;
 	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
 	NetworkConfiguration.MaxEpochs = MaxEpochs;
+
+	if(FNeuralNetworkJson::DeserializeJsonToStruct())
+	{
+		
+	}
 	
 	NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
 }
@@ -124,21 +120,4 @@ void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
 		
 		NeuralNetworkDataWidget->SetWidgetData(Distance, MoveValueX, MoveValueY, TrainingOver);
 	}
-}
-
-void ACubeMovement::SaveWeightsToJson()
-{
-	for (double InputWeight : NeuralNetwork.GetInputsWeights())
-	{
-		WeightsStruct.Inputs.Add(InputWeight);
-	}
-
-	for (double HiddenWeight : NeuralNetwork.GetHiddenWeights())
-	{
-		WeightsStruct.Hidden.Add(HiddenWeight);
-	}
-	
-	FString JsonString;
-	FJsonObjectConverter::UStructToJsonObjectString(WeightsStruct, JsonString);
-	FFileHelper::SaveStringToFile(*JsonString, *(FPaths::ProjectDir() + TEXT("/Json/Weights.json")));
 }
