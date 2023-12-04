@@ -1,10 +1,12 @@
 #include "NeuralNetworkDataWidget.h"
 #include "Components/TextBlock.h"
 
-void UNeuralNetworkDataWidget::SetWidgetData(const float Distance, const float Output, const bool Training) const
+void UNeuralNetworkDataWidget::SetWidgetData(const float Distance, const float Output1, const float Output2,
+	const bool Training) const
 {
 	DistanceText->SetText(FText::FromString(FString::SanitizeFloat(Distance)));
-	OutputText->SetText(FText::FromString(FString::SanitizeFloat(Output)));
+	Output1Text->SetText(FText::FromString(FString::SanitizeFloat(Output1)));
+	Output2Text->SetText(FText::FromString(FString::SanitizeFloat(Output2)));
 	
 	if(!Training)
 	{

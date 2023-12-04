@@ -14,9 +14,9 @@ public:
 	void Train(FTrainingEntry const& TrainingEntry);
 	TArray<double> const& Evaluate();
 	
-	double GetOutputsValuesClamped() const
+	TArray<double> GetOutputsValuesClamped()
 	{
-		return OutputsValuesClamped.Last();
+		return OutputsValuesClamped;
 	}
 
 	bool IsTrainingOver() const

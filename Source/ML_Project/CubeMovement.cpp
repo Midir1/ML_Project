@@ -13,6 +13,8 @@ void ACubeMovement::BeginPlay()
 	
 	InitializeNeuralNetwork();
 	Timer = MovementTimer;
+
+	GetWorldSettings()->SetTimeDilation(TimeDilation);
 }
 
 void ACubeMovement::Tick(const float DeltaTime)
@@ -38,7 +40,7 @@ void ACubeMovement::Tick(const float DeltaTime)
 	else
 	{
 		NeuralNetwork.Evaluate();
-		OutputsValuesTick(true);
+		OutputsValuesTick(true); 
 	}
 }
 
@@ -111,9 +113,12 @@ void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
 	
 	if(NeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
 	{
-		float const MoveValue = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()) - 1.0f;
+		float const MoveValueX = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[0]) - 1.0f;
+		float const MoveValueY = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[1]) - 1.0f;
 		
-		AddMovementInput(GetActorRightVector(), MoveValue);
-		NeuralNetworkDataWidget->SetWidgetData(Distance, MoveValue, TrainingOver);
+		AddMovementInput(GetActorRightVector(), MoveValueX);
+		AddMovementInput(GetActorForwardVector(), MoveValueY);
+		
+		NeuralNetworkDataWidget->SetWidgetData(Distance, MoveValueX, MoveValueY, TrainingOver);
 	}
 }

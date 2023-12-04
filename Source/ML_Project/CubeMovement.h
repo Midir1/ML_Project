@@ -28,6 +28,9 @@ private:
 	FVector Movement = FVector::Zero();
 
 	float Timer = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float TimeDilation = 2.0f;
 	
 	UPROPERTY(EditAnywhere)
 	float MovementTimer = 0.5f;

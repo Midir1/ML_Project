@@ -14,12 +14,16 @@ public:
 	class UTextBlock* DistanceText = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UTextBlock* OutputText = nullptr;
+	UTextBlock* Output1Text = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UTextBlock* TrainingText = nullptr;
+	UTextBlock* Output2Text = nullptr;
 
-	void SetWidgetData(const float Distance, const float Output, const bool Training) const;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* TrainingText = nullptr;
+
+	void SetWidgetData(const float Distance, const float Output1, const float Output2,
+	const bool Training) const;
 
 private:
 	const FLinearColor RedColor = FLinearColor::Red;
