@@ -1,5 +1,4 @@
 #include "CubeMovement.h"
-
 #include "NeuralNetworkDataWidget.h"
 
 ACubeMovement::ACubeMovement()
@@ -23,15 +22,15 @@ void ACubeMovement::Tick(const float DeltaTime)
 
 	if(!NeuralNetwork.IsTrainingOver())
 	{
-		Timer += DeltaTime;
-
-		if(Timer > MovementTimer)
-		{
-			Timer = 0.0f;
-			
-			// EntriesTick();
-			// NeuralNetwork.Train(Entry);
-		}
+		// Timer += DeltaTime;
+		//
+		// if(Timer > MovementTimer)
+		// {
+		// 	Timer = 0.0f;
+		// 	
+		// 	EntriesTick();
+		// 	NeuralNetwork.Train(Entry);
+		// }
 		
 		EntriesTick();
 		NeuralNetwork.Train(Entry);
@@ -106,7 +105,6 @@ void ACubeMovement::EntriesTick()
 	}
 }
 
-//TODO : Check Output Value To Make Cube Move With Two Axis
 void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
 {
 	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
