@@ -19,6 +19,16 @@ public:
 		return OutputsValuesClamped;
 	}
 
+	TArray<double> GetInputsWeights()
+	{
+		return InputsWeights;
+	}
+
+	TArray<double> GetHiddenWeights()
+	{
+		return HiddenWeights;
+	}
+
 	bool IsTrainingOver() const
 	{
 		return DoneValidationSet;

@@ -1,4 +1,6 @@
 #include "CubeMovement.h"
+
+#include "JsonObjectConverter.h"
 #include "NeuralNetworkDataWidget.h"
 
 ACubeMovement::ACubeMovement()
@@ -39,7 +41,10 @@ void ACubeMovement::Tick(const float DeltaTime)
 	else
 	{
 		NeuralNetwork.Evaluate();
-		OutputsValuesTick(true); 
+		OutputsValuesTick(true);
+
+		//Every Frame change Function Json location
+		SaveWeightsToJson();
 	}
 }
 
@@ -119,4 +124,21 @@ void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
 		
 		NeuralNetworkDataWidget->SetWidgetData(Distance, MoveValueX, MoveValueY, TrainingOver);
 	}
+}
+
+void ACubeMovement::SaveWeightsToJson()
+{
+	for (double InputWeight : NeuralNetwork.GetInputsWeights())
+	{
+		WeightsStruct.Inputs.Add(InputWeight);
+	}
+
+	for (double HiddenWeight : NeuralNetwork.GetHiddenWeights())
+	{
+		WeightsStruct.Hidden.Add(HiddenWeight);
+	}
+	
+	FString JsonString;
+	FJsonObjectConverter::UStructToJsonObjectString(WeightsStruct, JsonString);
+	FFileHelper::SaveStringToFile(*JsonString, *(FPaths::ProjectDir() + TEXT("/Json/Weights.json")));
 }

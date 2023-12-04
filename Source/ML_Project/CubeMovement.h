@@ -15,7 +15,7 @@ class ML_PROJECT_API ACubeMovement : public ACharacter
 public:
 	ACubeMovement();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	UNeuralNetworkDataWidget* NeuralNetworkDataWidget = nullptr;
 
 protected:
@@ -28,6 +28,7 @@ private:
 	FVector Movement = FVector::Zero();
 
 	float Timer = 0.0f;
+	//bool JsonSaved = false;
 
 	UPROPERTY(EditAnywhere)
 	float TimeDilation = 2.0f;
@@ -62,10 +63,13 @@ private:
 	FTrainingEntry Entry;
 	FNeuronsConfiguration NeuronsConfiguration;
 	FNetworkConfiguration NetworkConfiguration;
+	FWeights WeightsStruct;
 
 	FNeuralNetwork NeuralNetwork;
 
 	void InitializeNeuralNetwork();
 	void EntriesTick();
 	void OutputsValuesTick(const bool TrainingOver);
+
+	void SaveWeightsToJson();
 };
