@@ -34,7 +34,8 @@ void ACubeMovement::Tick(const float DeltaTime)
 		if(!JsonSaved)
 		{
 			JsonSaved = true;
-			FNeuralNetworkJson::SerializeToJson(NeuralNetwork);
+			FNeuralNetworkJson::SerializeNbNeuronsToJson(NeuralNetwork);
+			FNeuralNetworkJson::SerializeNeuronsWeightsToJson(NeuralNetwork);
 		}
 	}
 }
@@ -50,10 +51,10 @@ void ACubeMovement::InitializeNeuralNetwork()
 	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
 	NetworkConfiguration.MaxEpochs = MaxEpochs;
 
-	if(FNeuralNetworkJson::DeserializeJsonToStruct())
-	{
-		
-	}
+	// if(FNeuralNetworkJson::DeserializeJsonToStruct())
+	// {
+	// 	
+	// }
 	
 	NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
 }
