@@ -29,14 +29,7 @@ void ACubeMovement::Tick(const float DeltaTime)
 	{
 		NeuralNetwork.Evaluate();
 		OutputsValuesTick(true);
-
-		//Every Frame change Function Json location
-		if(!JsonSaved)
-		{
-			JsonSaved = true;
-			FNeuralNetworkJson::SerializeNbNeuronsToJson(NeuralNetwork);
-			FNeuralNetworkJson::SerializeNeuronsWeightsToJson(NeuralNetwork);
-		}
+		SaveNeuronsDataToJson();
 	}
 }
 
@@ -51,12 +44,20 @@ void ACubeMovement::InitializeNeuralNetwork()
 	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
 	NetworkConfiguration.MaxEpochs = MaxEpochs;
 
-	// if(FNeuralNetworkJson::DeserializeJsonToStruct())
-	// {
-	// 	
-	// }
+	const uint32 TotalNeurons = NbInputs + NbHidden + NbOutputs;
+	TArray<uint32> NbNeurons;
+	TArray<double> Weights;
+
+	if(FNeuralNetworkJson::DeserializeJson(NbNeurons, Weights)
+		&& TotalNeurons == NbNeurons[0] + NbNeurons[1] + NbNeurons[2])
+	{
+		NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration, Weights);
+	}
+	else
+	{
+		NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
+	}
 	
-	NeuralNetwork = FNeuralNetwork(NeuronsConfiguration, NetworkConfiguration);
 }
 
 void ACubeMovement::EntriesTick()
@@ -120,5 +121,15 @@ void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
 		AddMovementInput(GetActorForwardVector(), MoveValueY);
 		
 		NeuralNetworkDataWidget->SetWidgetData(Distance, MoveValueX, MoveValueY, TrainingOver);
+	}
+}
+
+void ACubeMovement::SaveNeuronsDataToJson()
+{
+	if(!JsonSaved)
+	{
+		JsonSaved = true;
+		FNeuralNetworkJson::SerializeNbNeuronsToJson(NeuralNetwork);
+		FNeuralNetworkJson::SerializeNeuronsWeightsToJson(NeuralNetwork);
 	}
 }

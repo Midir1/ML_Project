@@ -128,14 +128,17 @@ void FNeuralNetwork::InitializeWeights()
 
 void FNeuralNetwork::LoadWeights(TArray<double> const& Weight)
 {
-	for (uint32 InputIndex = 0; InputIndex < NbInputs * NbHidden; InputIndex++)
+	uint32 WeightIndex = 0;
+	
+	for (; WeightIndex < (NbInputs + 1) * (NbHidden + 1); WeightIndex++)
 	{
-		InputsWeights[InputIndex] = Weight[InputIndex];
+		InputsWeights[WeightIndex] = Weight[WeightIndex];
 	}
 
-	for (uint32 HiddenIndex = 0; HiddenIndex < NbHidden * NbOutputs; HiddenIndex++)
+	for (uint32 HiddenWeight = 0; WeightIndex < (NbInputs + 1) * (NbHidden + 1) + (NbHidden + 1) * NbOutputs;
+		WeightIndex++)
 	{
-		InputsWeights[HiddenIndex] = Weight[HiddenIndex];
+		HiddenWeights[HiddenWeight++] = Weight[WeightIndex];
 	}
 }
 

@@ -64,4 +64,5 @@ private:
 	void InitializeNeuralNetwork();
 	void EntriesTick();
 	void OutputsValuesTick(const bool TrainingOver);
+	void SaveNeuronsDataToJson();
 };
