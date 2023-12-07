@@ -84,7 +84,6 @@ private:
 	double LearningRate = 0;
 	double Momentum = 0;
 	uint32 MaxEpochs = 0;
-	bool UseBatchLearning = false;
 
 	uint32 CurrentEpoch = 0;  
 	bool DoneValidationSet = false;

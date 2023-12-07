@@ -98,7 +98,6 @@ void FNeuralNetwork::InitializeNetworkConfiguration(FNetworkConfiguration const&
 {
 	LearningRate = NetworkConfiguration.LearningRate;
 	Momentum = NetworkConfiguration.Momentum;
-	UseBatchLearning = NetworkConfiguration.UseBatchLearning;
 	MaxEpochs = NetworkConfiguration.MaxEpochs;
 }
 
@@ -183,16 +182,8 @@ void FNeuralNetwork::Backpropagation(TArray<double> const& ExpectedOutputs)
 		{
 			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
 			
-			if (UseBatchLearning)
-			{
-				DeltaHiddenWeights[WeightIndex] += LearningRate * HiddenValues[HiddenIndex] *
-					ErrorGradientsOutputs[OutputIndex];
-			}
-			else
-			{
-				DeltaHiddenWeights[WeightIndex] = LearningRate * HiddenValues[HiddenIndex] *
+			DeltaHiddenWeights[WeightIndex] = LearningRate * HiddenValues[HiddenIndex] *
 					ErrorGradientsOutputs[OutputIndex] + Momentum * DeltaHiddenWeights[WeightIndex];
-			}
 		}
 	}
 
@@ -204,22 +195,9 @@ void FNeuralNetwork::Backpropagation(TArray<double> const& ExpectedOutputs)
 		{
 			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
 			
-			if (UseBatchLearning)
-			{
-				DeltaInputsWeights[WeightIndex] += LearningRate * InputsValues[InputIndex] *
-					ErrorGradientsHidden[InputIndex];
-			}
-			else
-			{
-				DeltaInputsWeights[WeightIndex] = LearningRate * InputsValues[InputIndex] *
+			DeltaInputsWeights[WeightIndex] = LearningRate * InputsValues[InputIndex] *
 					ErrorGradientsHidden[InputIndex] + Momentum * DeltaInputsWeights[WeightIndex];
-			}
 		}
-	}
-
-	if (!UseBatchLearning)
-	{
-		UpdateWeights();
 	}
 }
 
@@ -231,11 +209,6 @@ void FNeuralNetwork::UpdateWeights()
 		{
 			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
 			InputsWeights[WeightIndex] += DeltaInputsWeights[WeightIndex];
-			
-			if (UseBatchLearning)
-			{
-				DeltaInputsWeights[WeightIndex] = 0;
-			}
 		}
 	}
 	
@@ -245,11 +218,6 @@ void FNeuralNetwork::UpdateWeights()
 		{
 			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
 			HiddenWeights[WeightIndex] += DeltaHiddenWeights[WeightIndex];
-			
-			if (UseBatchLearning)
-			{
-				DeltaHiddenWeights[WeightIndex] = 0;
-			}
 		}
 	}
 }

@@ -29,7 +29,6 @@ struct FNetworkConfiguration
 	// Learning params
 	double LearningRate = 0.001;
 	double Momentum = 0.9;
-	bool UseBatchLearning = false;
 
 	// Stopping conditions
 	uint32 MaxEpochs = 150;

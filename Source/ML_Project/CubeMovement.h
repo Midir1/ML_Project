@@ -48,9 +48,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	double Momentum = 0.9;
-	
-	UPROPERTY(EditAnywhere)
-	bool UseBatchLearning = false;
 
 	UPROPERTY(EditAnywhere)
 	double MaxEpochs = 200;

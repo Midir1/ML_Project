@@ -41,7 +41,6 @@ void ACubeMovement::InitializeNeuralNetwork()
 	
 	NetworkConfiguration.LearningRate = LearningRate;
 	NetworkConfiguration.Momentum = Momentum;
-	NetworkConfiguration.UseBatchLearning = UseBatchLearning;
 	NetworkConfiguration.MaxEpochs = MaxEpochs;
 
 	const uint32 TotalNeurons = NbInputs + NbHidden + NbOutputs;
@@ -81,25 +80,33 @@ void ACubeMovement::EntriesTick()
 			else
 			{
 				//Right : D
-				if(Distance.Y > 0.0f)
+				if(Distance.Y > 2.0f)
 				{
 					Entry.ExpectedOutputs.Add(1.0);
 				}
 				//Left : Q
-				else
+				else if(Distance.Y < 2.0f)
 				{
 					Entry.ExpectedOutputs.Add(0.0);
 				}
+				else
+				{
+					Entry.ExpectedOutputs.Add(0.5);
+				}
 
 				//Up : Z
-				if(Distance.X > 0.0f)
+				if(Distance.X > 2.0f)
 				{
 					Entry.ExpectedOutputs.Add(1.0);
 				}
 				//Down : S
-				else
+				else if(Distance.X < 2.0f)
 				{
 					Entry.ExpectedOutputs.Add(0.0);
+				}
+				else
+				{
+					Entry.ExpectedOutputs.Add(0.5);
 				}
 			}
 
