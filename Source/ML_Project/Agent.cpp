@@ -136,7 +136,6 @@ void AAgent::SaveNeuronsDataToJson()
 	if(!JsonSaved)
 	{
 		JsonSaved = true;
-		FNeuralNetworkJson::SerializeNbNeuronsToJson(NeuralNetwork);
-		FNeuralNetworkJson::SerializeNeuronsWeightsToJson(NeuralNetwork);
+		FNeuralNetworkJson::SerializeToJson(NeuralNetwork);
 	}
 }

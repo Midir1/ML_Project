@@ -1,22 +1,59 @@
 ﻿#include "NeuralNetworkJson.h"
 #include "NeuralNetwork.h"
 
-//TODO : Refactor functions
-void FNeuralNetworkJson::SerializeNbNeuronsToJson(FNeuralNetwork const& NeuralNetwork)
+void FNeuralNetworkJson::SerializeToJson(FNeuralNetwork const& NeuralNetwork)
 {
-	const TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	const TSharedPtr<FJsonObject> NbNeuronsJsonObject = MakeShareable(new FJsonObject);
+	const TSharedPtr<FJsonObject> NeuronsWeightsJsonObject = MakeShareable(new FJsonObject);
+	
+	NbNeuronsToJsonObject(NeuralNetwork, NbNeuronsJsonObject);
+	NeuronsWeightsToJsonObject(NeuralNetwork, NeuronsWeightsJsonObject);
+	
+	SaveJsonObjectToFile(NbNeuronsJsonObject, NbNeuronsText);
+	SaveJsonObjectToFile(NeuronsWeightsJsonObject, NeuronsWeightsText);
+}
 
+bool FNeuralNetworkJson::DeserializeJson(TArray<uint32>& NbNeurons, TArray<double>& Weights)
+{
+	FString JsonString;
+	TSharedPtr<FJsonObject> JsonObject;
+	
+	if (FFileHelper::LoadFileToString(JsonString, *NbNeuronsJsonPath))
+	{
+		const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonString);
+		
+		if (FJsonSerializer::Deserialize(JsonReader, JsonObject) && JsonObject.IsValid())
+		{
+			NbNeurons = JsonObjectToNbNeurons(JsonObject);
+		}
+	}
+
+	if (FFileHelper::LoadFileToString(JsonString, *NeuronsWeightsJsonPath))
+	{
+		const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonString);
+
+		if (FJsonSerializer::Deserialize(JsonReader, JsonObject) && JsonObject.IsValid())
+		{
+			Weights = JsonObjectToNeuronsWeights(JsonObject, NbNeurons[0], NbNeurons[1],
+				NbNeurons[2]);
+            
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void FNeuralNetworkJson::NbNeuronsToJsonObject(FNeuralNetwork const& NeuralNetwork, TSharedPtr<FJsonObject> const& JsonObject)
+{
 	JsonObject->SetNumberField(NbInputsText, NeuralNetwork.GetNbInputs());
 	JsonObject->SetNumberField(NbHiddenText, NeuralNetwork.GetNbHidden());
 	JsonObject->SetNumberField(NbOutputsText, NeuralNetwork.GetNbOutputs());
-
-	SerializeToJson(JsonObject, NbNeuronsText);
 }
 
-void FNeuralNetworkJson::SerializeNeuronsWeightsToJson(FNeuralNetwork const& NeuralNetwork)
+void FNeuralNetworkJson::NeuronsWeightsToJsonObject(FNeuralNetwork const& NeuralNetwork,
+	TSharedPtr<FJsonObject> const& JsonObject)
 {
-	const TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-	
 	int i = 0;
 	for (const double InputWeight : NeuralNetwork.GetInputsWeights())
 	{
@@ -30,23 +67,18 @@ void FNeuralNetworkJson::SerializeNeuronsWeightsToJson(FNeuralNetwork const& Neu
 		FString HiddenString = FString::Printf(TEXT("Hidden Weight %d"), i++);
 		JsonObject->SetNumberField(HiddenString, HiddenWeight);
 	}
-	
-	SerializeToJson(JsonObject, NeuronsWeightsText);
 }
 
-void FNeuralNetworkJson::SerializeToJson(TSharedPtr<FJsonObject> const& JsonObject, FString const& JsonFileName)
+void FNeuralNetworkJson::SaveJsonObjectToFile(TSharedPtr<FJsonObject> const& JsonObject, FString const& JsonFileName)
 {
 	FString JsonString;
-	
-	FFileHelper::SaveStringToFile(*JsonString, *(FPaths::ProjectDir() + "/Json/" + JsonFileName + ".json"));
-	
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonString);
 	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), JsonWriter);
 
 	FFileHelper::SaveStringToFile(*JsonString, *(FPaths::ProjectDir() + "/Json/" + JsonFileName + ".json"));
 }
 
-TArray<uint32> const& FNeuralNetworkJson::DeserializeNbNeuronsJson(TSharedPtr<FJsonObject> const& JsonObject)
+TArray<uint32> const& FNeuralNetworkJson::JsonObjectToNbNeurons(TSharedPtr<FJsonObject> const& JsonObject)
 {
 	const uint32 NbInputs = JsonObject->GetNumberField(NbInputsText);
 	const uint32 NbHidden = JsonObject->GetNumberField(NbHiddenText);
@@ -61,7 +93,7 @@ TArray<uint32> const& FNeuralNetworkJson::DeserializeNbNeuronsJson(TSharedPtr<FJ
 	return NbNeurons;
 }
 
-TArray<double> const& FNeuralNetworkJson::DeserializeNeuronsWeightsJson(TSharedPtr<FJsonObject> const& JsonObject,
+TArray<double> const& FNeuralNetworkJson::JsonObjectToNeuronsWeights(TSharedPtr<FJsonObject> const& JsonObject,
 	const uint32 NbInputs, const uint32 NbHidden, const uint32 NbOutputs)
 {
 	const uint32 TotalInputsWeights = (NbInputs + 1) * (NbHidden + 1);
@@ -82,34 +114,4 @@ TArray<double> const& FNeuralNetworkJson::DeserializeNeuronsWeightsJson(TSharedP
 	}
 
 	return Weights;
-}
-
-bool FNeuralNetworkJson::DeserializeJson(TArray<uint32>& NbNeurons, TArray<double>& Weights)
-{
-	FString JsonString;
-	FFileHelper::LoadFileToString(JsonString, *(FPaths::ProjectDir() + "/Json/" + NbNeuronsText + ".json"));
-	
-	TSharedPtr<FJsonObject> JsonObject;
-	const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonString);
-
-	if (FJsonSerializer::Deserialize(JsonReader, JsonObject) && JsonObject.IsValid())
-	{
-		NbNeurons = DeserializeNbNeuronsJson(JsonObject);
-	}
-
-	FString JsonString1;
-	FFileHelper::LoadFileToString(JsonString1, *(FPaths::ProjectDir() + "/Json/" + NeuronsWeightsText + ".json"));
-	
-	TSharedPtr<FJsonObject> JsonObject1;
-	const TSharedRef<TJsonReader<>> JsonReader1 = TJsonReaderFactory<>::Create(JsonString1);
-
-	if(FJsonSerializer::Deserialize(JsonReader1, JsonObject1) && JsonObject1.IsValid())
-	{
-		Weights = DeserializeNeuronsWeightsJson(JsonObject1,
-			NbNeurons[0], NbNeurons[1], NbNeurons[2]);
-
-		return true;
-	}
-
-	return false;
 }
