@@ -1,13 +1,13 @@
-#include "CubeMovement.h"
+#include "Agent.h"
 #include "NeuralNetworkDataWidget.h"
 #include "NeuralNetworkJson.h"
 
-ACubeMovement::ACubeMovement()
+AAgent::AAgent()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ACubeMovement::BeginPlay()
+void AAgent::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -15,25 +15,25 @@ void ACubeMovement::BeginPlay()
 	GetWorldSettings()->SetTimeDilation(TimeDilation);
 }
 
-void ACubeMovement::Tick(const float DeltaTime)
+void AAgent::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(!NeuralNetwork.IsTrainingOver())
+	EntriesTick();
+	NeuralNetwork.Train(Entry);
+
+	if(!NeuralNetwork.IsTrainingDone())
 	{
-		EntriesTick();
-		NeuralNetwork.Train(Entry);
 		OutputsValuesTick(false);
 	}
 	else
 	{
-		NeuralNetwork.Evaluate();
 		OutputsValuesTick(true);
 		SaveNeuronsDataToJson();
 	}
 }
 
-void ACubeMovement::InitializeNeuralNetwork()
+void AAgent::InitializeNeuralNetwork()
 {
 	NeuronsConfiguration.NbInputs = NbInputs;
 	NeuronsConfiguration.NbHidden = NbHidden;
@@ -59,9 +59,9 @@ void ACubeMovement::InitializeNeuralNetwork()
 	
 }
 
-void ACubeMovement::EntriesTick()
+//TODO : Making "Raycasts" to give vision instead of relying on distance
+void AAgent::EntriesTick()
 {
-	//First doing with only horizontal axis : Y axis
 	const FVector Distance = Sphere->GetActorLocation() - GetActorLocation();
 	
 	if(Distance != FVector::Zero())
@@ -80,12 +80,12 @@ void ACubeMovement::EntriesTick()
 			else
 			{
 				//Right : D
-				if(Distance.Y > 2.0f)
+				if(Distance.Y > 50.0f)
 				{
 					Entry.ExpectedOutputs.Add(1.0);
 				}
 				//Left : Q
-				else if(Distance.Y < 2.0f)
+				else if(Distance.Y < -50.0f)
 				{
 					Entry.ExpectedOutputs.Add(0.0);
 				}
@@ -95,12 +95,12 @@ void ACubeMovement::EntriesTick()
 				}
 
 				//Up : Z
-				if(Distance.X > 2.0f)
+				if(Distance.X > 50.0f)
 				{
 					Entry.ExpectedOutputs.Add(1.0);
 				}
 				//Down : S
-				else if(Distance.X < 2.0f)
+				else if(Distance.X < -50.0f)
 				{
 					Entry.ExpectedOutputs.Add(0.0);
 				}
@@ -115,7 +115,7 @@ void ACubeMovement::EntriesTick()
 	}
 }
 
-void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
+void AAgent::OutputsValuesTick(const bool TrainingOver)
 {
 	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
 	
@@ -131,7 +131,7 @@ void ACubeMovement::OutputsValuesTick(const bool TrainingOver)
 	}
 }
 
-void ACubeMovement::SaveNeuronsDataToJson()
+void AAgent::SaveNeuronsDataToJson()
 {
 	if(!JsonSaved)
 	{

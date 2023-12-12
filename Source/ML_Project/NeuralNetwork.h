@@ -12,7 +12,6 @@ public:
 		FNetworkConfiguration const& NetworkConfiguration, TArray<double> const& Weights);
 
 	void Train(FTrainingEntry const& TrainingEntry);
-	TArray<double> const& Evaluate();
 	
 	TArray<double> GetOutputsValuesClamped()
 	{
@@ -29,9 +28,9 @@ public:
 		return HiddenWeights;
 	}
 
-	bool IsTrainingOver() const
+	bool IsTrainingDone() const
 	{
-		return DoneValidationSet;
+		return TrainingDone;
 	}
 
 	uint32 GetNbInputs() const
@@ -48,8 +47,7 @@ public:
 	{
 		return NbOutputs;
 	}
-
-	//Weights Accessors
+	
 	TArray<double> const& GetInputsWeights() const
 	{
 		return InputsWeights;
@@ -61,7 +59,6 @@ public:
 	}
 
 private:
-	//Neurons
 	uint32 NbInputs = 0;
 	uint32 NbHidden = 0;
 	uint32 NbOutputs = 0;
@@ -80,13 +77,12 @@ private:
 	TArray<double> ErrorGradientsHidden;
 	TArray<double> ErrorGradientsOutputs;
 	
-	//Training Settings
 	double LearningRate = 0;
 	double Momentum = 0;
 	uint32 MaxEpochs = 0;
 
 	uint32 CurrentEpoch = 0;  
-	bool DoneValidationSet = false;
+	bool TrainingDone = false;
 
 	void InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration);
 	void InitializeNetwork();
@@ -101,22 +97,19 @@ private:
 	void RunEpoch(FTrainingEntry const& TrainingEntry);
 	void Backpropagation(TArray<double> const& ExpectedOutputs);
 	void UpdateWeights();
-
-	//Sigmoïd function for neuron activation
+	
 	static double Sigmoid(const double X)
 	{
 		return 1.0 / (1.0 + exp(-X));
 	}
-
-	//Clamp value because of sigmoïd asymptotic nature (can't reach 0 and 1 values)
+	
 	static double ClampOutputValue(const double X)
 	{
 		if (X < 0.1) return 0.0;
 		if (X > 0.9) return 1.0;
 		return X;
 	}
-
-	//Index Accessors
+	
 	uint32 GetInputWeightIndex(const uint32 InputIndex, const uint32 HiddenIndex) const
 	{
 		return InputIndex * (NbHidden + 1) + HiddenIndex;

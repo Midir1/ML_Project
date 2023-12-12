@@ -15,6 +15,9 @@ public:
 	static bool DeserializeJson(TArray<uint32>& NbNeurons, TArray<double>& Weights);
 
 private :
+	inline static FString NbInputsText = TEXT("NbInputs");
+	inline static FString NbHiddenText = TEXT("NbHidden");
+	inline static FString NbOutputsText = TEXT("NbOutputs");
 	inline static FString NbNeuronsText = TEXT("NbNeurons");
 	inline static FString NeuronsWeightsText = TEXT("NeuronsWeights");
 };

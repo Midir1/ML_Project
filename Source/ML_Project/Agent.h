@@ -3,17 +3,17 @@
 #include "CoreMinimal.h"
 #include "NeuralNetwork.h"
 #include "GameFramework/Character.h"
-#include "CubeMovement.generated.h"
+#include "Agent.generated.h"
 
 class UNeuralNetworkDataWidget;
 
 UCLASS()
-class ML_PROJECT_API ACubeMovement : public ACharacter
+class ML_PROJECT_API AAgent : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	ACubeMovement();
+	AAgent();
 
 	UPROPERTY(BlueprintReadWrite)
 	UNeuralNetworkDataWidget* NeuralNetworkDataWidget = nullptr;
@@ -55,7 +55,6 @@ private:
 	FTrainingEntry Entry;
 	FNeuronsConfiguration NeuronsConfiguration;
 	FNetworkConfiguration NetworkConfiguration;
-
 	FNeuralNetwork NeuralNetwork;
 
 	void InitializeNeuralNetwork();

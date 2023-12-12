@@ -1,13 +1,14 @@
 ﻿#include "NeuralNetworkJson.h"
 #include "NeuralNetwork.h"
 
+//TODO : Refactor functions
 void FNeuralNetworkJson::SerializeNbNeuronsToJson(FNeuralNetwork const& NeuralNetwork)
 {
 	const TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 
-	JsonObject->SetNumberField(TEXT("NbInputs"), NeuralNetwork.GetNbInputs());
-	JsonObject->SetNumberField(TEXT("NbHidden"), NeuralNetwork.GetNbHidden());
-	JsonObject->SetNumberField(TEXT("NbOutputs"), NeuralNetwork.GetNbOutputs());
+	JsonObject->SetNumberField(NbInputsText, NeuralNetwork.GetNbInputs());
+	JsonObject->SetNumberField(NbHiddenText, NeuralNetwork.GetNbHidden());
+	JsonObject->SetNumberField(NbOutputsText, NeuralNetwork.GetNbOutputs());
 
 	SerializeToJson(JsonObject, NbNeuronsText);
 }
@@ -47,9 +48,9 @@ void FNeuralNetworkJson::SerializeToJson(TSharedPtr<FJsonObject> const& JsonObje
 
 TArray<uint32> const& FNeuralNetworkJson::DeserializeNbNeuronsJson(TSharedPtr<FJsonObject> const& JsonObject)
 {
-	const uint32 NbInputs = JsonObject->GetNumberField(TEXT("NbInputs"));
-	const uint32 NbHidden = JsonObject->GetNumberField(TEXT("NbHidden"));
-	const uint32 NbOutputs = JsonObject->GetNumberField(TEXT("NbOutputs"));
+	const uint32 NbInputs = JsonObject->GetNumberField(NbInputsText);
+	const uint32 NbHidden = JsonObject->GetNumberField(NbHiddenText);
+	const uint32 NbOutputs = JsonObject->GetNumberField(NbOutputsText);
 
 	static TArray<uint32> NbNeurons;
 	

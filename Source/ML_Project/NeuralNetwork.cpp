@@ -1,7 +1,7 @@
 ﻿#include "NeuralNetwork.h"
 #include "Math/UnrealMathUtility.h"
 
-FNeuralNetwork::FNeuralNetwork() {}
+FNeuralNetwork::FNeuralNetwork(){}
 
 FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration,
                                FNetworkConfiguration const& NetworkConfiguration)
@@ -23,47 +23,17 @@ FNeuralNetwork::FNeuralNetwork(FNeuronsConfiguration const& NeuronsConfiguration
 
 void FNeuralNetwork::Train(FTrainingEntry const& TrainingEntry)
 {
+	RunEpoch(TrainingEntry);
+	
 	if(CurrentEpoch < MaxEpochs)
 	{
-		RunEpoch(TrainingEntry);
 		CurrentEpoch++;
 	}
-	else if (!DoneValidationSet)
+	else if (!TrainingDone)
 	{
-		DoneValidationSet = true;
+		LearningRate = 0;
+		TrainingDone = true;
 	}
-}
-
-TArray<double> const& FNeuralNetwork::Evaluate()
-{
-	for (uint32 HiddenIndex = 0; HiddenIndex < NbHidden; HiddenIndex++)
-	{
-		HiddenValues[HiddenIndex] = 0;
-		
-		for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
-		{
-			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
-			HiddenValues[HiddenIndex] += InputsValues[InputIndex] * InputsWeights[WeightIndex];
-		}
-
-		HiddenValues[HiddenIndex] = Sigmoid(HiddenValues[HiddenIndex]);
-	}
-
-	for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
-	{
-		OutputsValues[OutputIndex] = 0;
-		
-		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
-		{
-			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
-			OutputsValues[OutputIndex] += HiddenValues[HiddenIndex] * HiddenWeights[WeightIndex];
-		}
-
-		OutputsValues[OutputIndex] = Sigmoid(OutputsValues[OutputIndex]);
-		OutputsValuesClamped[OutputIndex] = ClampOutputValue(OutputsValues[OutputIndex]);
-	}
-
-	return OutputsValuesClamped;
 }
 
 void FNeuralNetwork::InitializeNbNeurons(FNeuronsConfiguration const& NeuronsConfiguration)
@@ -75,13 +45,11 @@ void FNeuralNetwork::InitializeNbNeurons(FNeuronsConfiguration const& NeuronsCon
 
 void FNeuralNetwork::InitializeNetwork()
 {
-	// Resizing the neurons values of InputLayer and HiddenLayer to add bias neurons
 	InputsValues.SetNum(NbInputs + 1);
 	HiddenValues.SetNum(NbHidden + 1);
 	OutputsValues.SetNum(NbOutputs);
 	OutputsValuesClamped.SetNum(NbOutputs);
 	
-	//Set bias values
 	InputsValues.Last() = -1.0;
 	HiddenValues.Last() = -1.0;
 	
@@ -101,9 +69,9 @@ void FNeuralNetwork::InitializeNetworkConfiguration(FNetworkConfiguration const&
 	MaxEpochs = NetworkConfiguration.MaxEpochs;
 }
 
+//TODO : Can do better random
 void FNeuralNetwork::InitializeWeights()
 {
-	//RandRange for random, check others methods for better random
 	for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
 	{
 		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
@@ -148,7 +116,34 @@ TArray<double> const& FNeuralNetwork::Evaluate(TArray<double> const& Input)
 		InputsValues[i] = Input[i];
 	}
 
-	return Evaluate();
+	for (uint32 HiddenIndex = 0; HiddenIndex < NbHidden; HiddenIndex++)
+	{
+		HiddenValues[HiddenIndex] = 0;
+		
+		for (uint32 InputIndex = 0; InputIndex <= NbInputs; InputIndex++)
+		{
+			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
+			HiddenValues[HiddenIndex] += InputsValues[InputIndex] * InputsWeights[WeightIndex];
+		}
+
+		HiddenValues[HiddenIndex] = Sigmoid(HiddenValues[HiddenIndex]);
+	}
+
+	for (uint32 OutputIndex = 0; OutputIndex < NbOutputs; OutputIndex++)
+	{
+		OutputsValues[OutputIndex] = 0;
+		
+		for (uint32 HiddenIndex = 0; HiddenIndex <= NbHidden; HiddenIndex++)
+		{
+			uint32 const WeightIndex = GetHiddenWeightIndex(HiddenIndex, OutputIndex);
+			OutputsValues[OutputIndex] += HiddenValues[HiddenIndex] * HiddenWeights[WeightIndex];
+		}
+
+		OutputsValues[OutputIndex] = Sigmoid(OutputsValues[OutputIndex]);
+		OutputsValuesClamped[OutputIndex] = ClampOutputValue(OutputsValues[OutputIndex]);
+	}
+
+	return OutputsValuesClamped;
 }
 
 double FNeuralNetwork::GetHiddenErrorGradient(const uint32 HiddenIndex) const

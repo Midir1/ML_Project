@@ -22,8 +22,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* TrainingText = nullptr;
 
-	void SetWidgetData(const float Distance, const float Output1, const float Output2,
-	const bool Training) const;
+	void SetWidgetData(const float Distance, const float Output1, const float Output2, const bool Training) const;
 
 private:
 	const FLinearColor RedColor = FLinearColor::Red;
