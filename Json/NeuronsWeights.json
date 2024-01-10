@@ -1,17 +1,17 @@
 {
-	"Input Weight 0": -4.2143297045212575,
-	"Input Weight 1": -4.9635591207724392,
+	"Input Weight 0": -11.485386900189873,
+	"Input Weight 1": -12.234616316441061,
 	"Input Weight 2": -0.25206762552261353,
-	"Input Weight 3": -3.2976335384931632,
-	"Input Weight 4": -3.5020700544703462,
+	"Input Weight 3": 0.015033519882498335,
+	"Input Weight 4": -0.17482802943935455,
 	"Input Weight 5": -0.25041963160037994,
 	"Input Weight 6": 0.32830286026000977,
 	"Input Weight 7": 0.051835715770721436,
 	"Input Weight 8": 0.230307936668396,
-	"Hidden Weight 0": -0.46639681935579219,
-	"Hidden Weight 1": -0.56470812290143235,
-	"Hidden Weight 2": -0.79529725444210797,
-	"Hidden Weight 3": -0.60556587042253951,
-	"Hidden Weight 4": 2.1566815009299374,
-	"Hidden Weight 5": -4.105528390033375
+	"Hidden Weight 0": -1.2782002216214949,
+	"Hidden Weight 1": -0.89802655713507484,
+	"Hidden Weight 2": -1.8829073741112257,
+	"Hidden Weight 3": -0.75457230496282524,
+	"Hidden Weight 4": -3.159615916809928,
+	"Hidden Weight 5": 2.6526891346176189
 }
