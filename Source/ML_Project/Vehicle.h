@@ -13,13 +13,15 @@ class ML_PROJECT_API AVehicle : public AWheeledVehiclePawn
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* _PlayerInputComponent) override;
 
 private:
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	
 	void SetThrottle(const FInputActionValue& Value);
 	void SetBrake(const FInputActionValue& Value);
 	void SetSteering(const FInputActionValue& Value);
 	void SetHandbrake(const FInputActionValue& Value);
+	void UnsetHandbrake(const FInputActionValue& Value);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;

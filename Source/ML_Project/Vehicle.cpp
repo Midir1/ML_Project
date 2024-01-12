@@ -1,6 +1,7 @@
 #include "Vehicle.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/PlayerController.h"
 
 void AVehicle::BeginPlay()
 {
@@ -18,7 +19,7 @@ void AVehicle::BeginPlay()
 	}
 }
 
-void AVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AVehicle::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -27,59 +28,58 @@ void AVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(ThrottleAction, ETriggerEvent::Triggered, this, &AVehicle::SetThrottle);
 		EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &AVehicle::SetBrake);
 		EnhancedInputComponent->BindAction(SteeringAction, ETriggerEvent::Triggered, this, &AVehicle::SetSteering);
-		//Pressed
-		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Triggered, this, &AVehicle::SetHandbrake);
-		//IE_Released
-		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Triggered, this, &AVehicle::SetHandbrake);
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Ongoing, this, &AVehicle::SetHandbrake);
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &AVehicle::UnsetHandbrake);
 	}
 }
 
 void AVehicle::SetThrottle(const FInputActionValue& Value)
 {
-	//ThrottleValue = FMath::Clamp(ThrottleValue, -1.0f, 1.0f);
-
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));	
+	const float ThrottleValue = Value.Get<float>();
 	
 	if (ChaosVehicleMovementComponent)
 	{
-		//ChaosVehicleMovementComponent->SetThrottleInput(ThrottleValue);
+		ChaosVehicleMovementComponent->SetThrottleInput(ThrottleValue);
 	}
 }
 
 void AVehicle::SetBrake(const FInputActionValue& Value)
 {
-	//BrakeValue = FMath::Clamp(BrakeValue, -1.0f, 1.0f);
-
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
-
-	// Set the throttle input for the Chaos vehicle
+	const float BrakeValue = Value.Get<float>();
+	
 	if (ChaosVehicleMovementComponent)
 	{
-		//ChaosVehicleMovementComponent->SetBrakeInput(BrakeValue);
+		ChaosVehicleMovementComponent->SetBrakeInput(BrakeValue);
 	}
 }
 
 void AVehicle::SetSteering(const FInputActionValue& Value)
 {
-	// Ensure the ThrottleValue is clamped between -1.0 and 1.0
-	//SteeringValue = FMath::Clamp(SteeringValue, -1.0f, 1.0f);
-
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
-
-	// Set the throttle input for the Chaos vehicle
+	const float SteeringValue = Value.Get<float>();
+	
 	if (ChaosVehicleMovementComponent)
 	{
-		//ChaosVehicleMovementComponent->SetSteeringInput(SteeringValue);
+		ChaosVehicleMovementComponent->SetSteeringInput(SteeringValue);
 	}
 }
 
 void AVehicle::SetHandbrake(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
+	const bool DoHandbrake = Value.Get<bool>();
 	
-	// Set the throttle input for the Chaos vehicle
 	if (ChaosVehicleMovementComponent)
 	{
-		ChaosVehicleMovementComponent->SetHandbrakeInput(true);
+		ChaosVehicleMovementComponent->SetHandbrakeInput(DoHandbrake);
+	}
+}
+
+// TODO : Make Handbrake work
+void AVehicle::UnsetHandbrake(const FInputActionValue& Value)
+{
+	const bool DoHandbrake = Value.Get<bool>();
+	
+	if (ChaosVehicleMovementComponent)
+	{
+		ChaosVehicleMovementComponent->SetHandbrakeInput(false);
 	}
 }
