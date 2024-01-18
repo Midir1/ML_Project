@@ -13,7 +13,7 @@ class ML_PROJECT_API AVehicle : public AWheeledVehiclePawn
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* _PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 private:
 	
@@ -21,7 +21,6 @@ private:
 	void SetBrake(const FInputActionValue& Value);
 	void SetSteering(const FInputActionValue& Value);
 	void SetHandbrake(const FInputActionValue& Value);
-	void UnsetHandbrake(const FInputActionValue& Value);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -30,13 +29,13 @@ private:
 	class UInputAction* ThrottleAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* BrakeAction;
+	UInputAction* BrakeAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* SteeringAction;
+	UInputAction* SteeringAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* HandbrakeAction;
+	UInputAction* HandbrakeAction;
 	
 	UPROPERTY()
 	UChaosVehicleMovementComponent* ChaosVehicleMovementComponent = nullptr;

@@ -19,7 +19,7 @@ void AVehicle::BeginPlay()
 	}
 }
 
-void AVehicle::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void AVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -28,8 +28,8 @@ void AVehicle::SetupPlayerInputComponent(class UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(ThrottleAction, ETriggerEvent::Triggered, this, &AVehicle::SetThrottle);
 		EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &AVehicle::SetBrake);
 		EnhancedInputComponent->BindAction(SteeringAction, ETriggerEvent::Triggered, this, &AVehicle::SetSteering);
-		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Ongoing, this, &AVehicle::SetHandbrake);
-		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &AVehicle::UnsetHandbrake);
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Triggered, this, &AVehicle::SetHandbrake);
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &AVehicle::SetHandbrake);
 	}
 }
 
@@ -65,21 +65,10 @@ void AVehicle::SetSteering(const FInputActionValue& Value)
 
 void AVehicle::SetHandbrake(const FInputActionValue& Value)
 {
-	const bool DoHandbrake = Value.Get<bool>();
+	bool IsHandbraking = Value.Get<bool>();
 	
 	if (ChaosVehicleMovementComponent)
 	{
-		ChaosVehicleMovementComponent->SetHandbrakeInput(DoHandbrake);
-	}
-}
-
-// TODO : Make Handbrake work
-void AVehicle::UnsetHandbrake(const FInputActionValue& Value)
-{
-	const bool DoHandbrake = Value.Get<bool>();
-	
-	if (ChaosVehicleMovementComponent)
-	{
-		ChaosVehicleMovementComponent->SetHandbrakeInput(false);
+		ChaosVehicleMovementComponent->SetHandbrakeInput(IsHandbraking);
 	}
 }
