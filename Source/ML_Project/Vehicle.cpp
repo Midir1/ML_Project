@@ -17,6 +17,16 @@ void AVehicle::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	// Q[NumStates][NumActions] = {0};
+	// QLearning();
+}
+
+void AVehicle::Tick(const float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// QLearning();
 }
 
 void AVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,10 +75,58 @@ void AVehicle::SetSteering(const FInputActionValue& Value)
 
 void AVehicle::SetHandbrake(const FInputActionValue& Value)
 {
-	bool IsHandbraking = Value.Get<bool>();
+	const bool DoHandbrake = Value.Get<bool>();
 	
 	if (ChaosVehicleMovementComponent)
 	{
-		ChaosVehicleMovementComponent->SetHandbrakeInput(IsHandbraking);
+		ChaosVehicleMovementComponent->SetHandbrakeInput(DoHandbrake);
 	}
 }
+
+// int AVehicle::ChooseAction(const int State) const
+// {
+// 	const int32 Rand = FMath::RandRange(0, 2147483647);
+// 	
+// 	if (Rand / 2147483647 < ExplorationRate)
+// 	{
+// 		return Rand % NumActions;
+// 	}
+// 	
+// 	int BestAction = 0;
+// 	
+// 	for (int i = 1; i < NumActions; ++i)
+// 	{
+// 		if (Q[State][i] > Q[State][BestAction])
+// 		{
+// 			BestAction = i;
+// 		}
+// 	}
+// 	return BestAction;
+// }
+//
+// void AVehicle::UpdateQ(const int State, const int Action, const float Reward, const int NextState)
+// {
+// 	Q[State][Action] = Q[State][Action] + LearningRate * (Reward + DiscountFactor
+// 		* Q[NextState][ChooseAction(NextState)] - Q[State][Action]);
+// }
+//
+// void AVehicle::QLearning()
+// {
+// 	if (Episode < TotalEpisodes)
+// 	{
+// 		int32 CurrentState =  FMath::RandRange(0, 2147483647) % NumStates;
+// 		
+// 		while (CurrentState != NumStates - 1)
+// 		{  
+// 			const int Action = ChooseAction(CurrentState);
+// 			
+// 			const int NextState = (Action == 0) ? CurrentState + 1 : CurrentState + 2;
+// 			const float Reward = (NextState == NumStates - 1) ? 100.0 : 0.0;
+// 			
+// 			UpdateQ(CurrentState, Action, Reward, NextState);
+// 			CurrentState = NextState;
+// 		}
+//
+// 		++Episode;
+// 	}
+// }
