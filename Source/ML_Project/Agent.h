@@ -32,7 +32,7 @@ private:
 	float TimeDilation = 2.0f;
 	
 	UPROPERTY(EditAnywhere)
-	AActor* Sphere = nullptr;
+	TArray<AActor*> Spheres;
 
 	UPROPERTY(EditAnywhere)
 	uint32 NbInputs = 0;

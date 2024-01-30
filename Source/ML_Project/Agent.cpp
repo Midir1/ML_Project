@@ -23,12 +23,12 @@ void AAgent::Tick(const float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	LinetraceArray[0] = LineTrace(GetActorForwardVector());
-	LinetraceArray[1] = LineTrace(2 * GetActorForwardVector() + GetActorRightVector());
-	LinetraceArray[2] = LineTrace(GetActorForwardVector() + GetActorRightVector());
-	LinetraceArray[3] = LineTrace(GetActorForwardVector() + 2 * GetActorRightVector());
-	LinetraceArray[4] = LineTrace(- 2 * GetActorRightVector() + GetActorForwardVector());
-	LinetraceArray[5] = LineTrace(-GetActorRightVector() + GetActorForwardVector());
-	LinetraceArray[6] = LineTrace(-GetActorRightVector() + 2 * GetActorForwardVector());
+	LinetraceArray[1] = LineTrace(GetActorForwardVector() + GetActorRightVector() * 0.1f);
+	LinetraceArray[2] = LineTrace(GetActorForwardVector() + GetActorRightVector() * 0.2f);
+	LinetraceArray[3] = LineTrace(GetActorForwardVector() + GetActorRightVector() * 0.3f);
+	LinetraceArray[4] = LineTrace(GetActorForwardVector() - GetActorRightVector() * 0.1f);
+	LinetraceArray[5] = LineTrace(GetActorForwardVector() - GetActorRightVector() * 0.2f);
+	LinetraceArray[6] = LineTrace(GetActorForwardVector() - GetActorRightVector() * 0.3f);
 
 	EntriesTick();
 	NeuralNetwork.Train(Entry);
@@ -115,13 +115,13 @@ void AAgent::EntriesTick()
 
 void AAgent::OutputsValuesTick(const bool TrainingOver)
 {
-	const float Distance = Sphere->GetActorLocation().Y - GetActorLocation().Y;
+	const float Distance = Spheres[0]->GetActorLocation().Y - GetActorLocation().Y;
 	
 	if(NeuralNetwork.GetNbOutputs() > 0 && Controller != nullptr)
 	{
 		float const MoveValueX = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[0]) - 1.0f;
 		float const MoveValueY = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[1]) - 1.0f;
-		float const RotValue = (2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[2]) - 1.0f) * 0.1f;
+		float const RotValue = (2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[2]) - 1.0f) * 0.5f;
 		
 		AddMovementInput(GetActorRightVector(), MoveValueX);
 		AddMovementInput(GetActorForwardVector(), MoveValueY);
@@ -159,11 +159,8 @@ uint8 AAgent::LineTrace(FVector LineAngle) const
 		true
 	);
 
-	if (bHit && HitResult.GetActor() == Sphere)
+	if (bHit && Spheres.Contains(HitResult.GetActor()))
 	{
-		FVector HitLocation = HitResult.Location;
-		AActor* HitActor = HitResult.GetActor();
-
 		return true;
 	}
 
