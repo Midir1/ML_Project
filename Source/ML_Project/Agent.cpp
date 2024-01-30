@@ -22,22 +22,13 @@ void AAgent::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	LinetraceArray[0] = LineTrace(FVector(1.0f, 0.0f, 0.0f));
-	LinetraceArray[1] = LineTrace(FVector(2.0f, 1.0f, 0.0f));
-	LinetraceArray[2] = LineTrace(FVector(1.0f, 1.0f, 0.0f));
-	LinetraceArray[3] = LineTrace(FVector(1.0f, 2.0f, 0.0f));
-	LinetraceArray[4] = LineTrace(FVector(0.0f, 1.0f, 0.0f));
-	LinetraceArray[5] = LineTrace(FVector(-1.0f, 2.0f, 0.0f));
-	LinetraceArray[6] = LineTrace(FVector(-1.0f, 1.0f, 0.0f));
-	LinetraceArray[7] = LineTrace(FVector(-2.0f, 1.0f, 0.0f));
-	LinetraceArray[8] = LineTrace(FVector(-1.0f, 0.0f, 0.0f));
-	LinetraceArray[9] = LineTrace(FVector(-2.0f, -1.0f, 0.0f));
-	LinetraceArray[10] = LineTrace(FVector(-1.0f, -1.0f, 0.0f));
-	LinetraceArray[11] = LineTrace(FVector(-1.0f, -2.0f, 0.0f));
-	LinetraceArray[12] = LineTrace(FVector(0.0f, -1.0f, 0.0f));
-	LinetraceArray[13] = LineTrace(FVector(1.0f, -2.0f, 0.0f));
-	LinetraceArray[14] = LineTrace(FVector(1.0f, -1.0f, 0.0f));
-	LinetraceArray[15] = LineTrace(FVector(2.0f, -1.0f, 0.0f));
+	LinetraceArray[0] = LineTrace(GetActorForwardVector());
+	LinetraceArray[1] = LineTrace(2 * GetActorForwardVector() + GetActorRightVector());
+	LinetraceArray[2] = LineTrace(GetActorForwardVector() + GetActorRightVector());
+	LinetraceArray[3] = LineTrace(GetActorForwardVector() + 2 * GetActorRightVector());
+	LinetraceArray[4] = LineTrace(- 2 * GetActorRightVector() + GetActorForwardVector());
+	LinetraceArray[5] = LineTrace(-GetActorRightVector() + GetActorForwardVector());
+	LinetraceArray[6] = LineTrace(-GetActorRightVector() + 2 * GetActorForwardVector());
 
 	EntriesTick();
 	NeuralNetwork.Train(Entry);
@@ -88,7 +79,7 @@ void AAgent::EntriesTick()
 	double XStep = 0.125f;
 	double YStep = 0.125f;
 
-	while (i < 16)
+	while (i < NbInputs)
 	{
 		Entry.Inputs.Add(LinetraceArray[i]);
 
@@ -109,6 +100,7 @@ void AAgent::EntriesTick()
 		{
 			Entry.ExpectedOutputs.Add(x);
 			Entry.ExpectedOutputs.Add(y);
+			Entry.ExpectedOutputs.Add(0.5);
 
 			return;
 		}
@@ -118,6 +110,7 @@ void AAgent::EntriesTick()
 
 	Entry.ExpectedOutputs.Add(0.5);
 	Entry.ExpectedOutputs.Add(0.5);
+	Entry.ExpectedOutputs.Add(1.0);
 }
 
 void AAgent::OutputsValuesTick(const bool TrainingOver)
@@ -128,9 +121,11 @@ void AAgent::OutputsValuesTick(const bool TrainingOver)
 	{
 		float const MoveValueX = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[0]) - 1.0f;
 		float const MoveValueY = 2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[1]) - 1.0f;
+		float const RotValue = (2.0f * static_cast<float>(NeuralNetwork.GetOutputsValuesClamped()[2]) - 1.0f) * 0.1f;
 		
 		AddMovementInput(GetActorRightVector(), MoveValueX);
 		AddMovementInput(GetActorForwardVector(), MoveValueY);
+		AddControllerYawInput(RotValue);
 		
 		NeuralNetworkDataWidget->SetWidgetData(Distance, MoveValueX, MoveValueY, TrainingOver);
 	}
