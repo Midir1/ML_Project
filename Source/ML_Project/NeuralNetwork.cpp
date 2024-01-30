@@ -191,7 +191,7 @@ void FNeuralNetwork::Backpropagation(TArray<double> const& ExpectedOutputs)
 			uint32 const WeightIndex = GetInputWeightIndex(InputIndex, HiddenIndex);
 			
 			DeltaInputsWeights[WeightIndex] = LearningRate * InputsValues[InputIndex] *
-					ErrorGradientsHidden[InputIndex] + Momentum * DeltaInputsWeights[WeightIndex];
+					ErrorGradientsHidden[HiddenIndex] + Momentum * DeltaInputsWeights[WeightIndex];
 		}
 	}
 }

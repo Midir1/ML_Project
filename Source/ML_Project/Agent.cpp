@@ -1,6 +1,7 @@
 #include "Agent.h"
 #include "NeuralNetworkDataWidget.h"
 #include "NeuralNetworkJson.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AAgent::AAgent()
 {
@@ -10,6 +11,8 @@ AAgent::AAgent()
 void AAgent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	LinetraceArray.SetNum(NbInputs);
 	
 	InitializeNeuralNetwork();
 	GetWorldSettings()->SetTimeDilation(TimeDilation);
@@ -19,9 +22,26 @@ void AAgent::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	LinetraceArray[0] = LineTrace(FVector(1.0f, 0.0f, 0.0f));
+	LinetraceArray[1] = LineTrace(FVector(2.0f, 1.0f, 0.0f));
+	LinetraceArray[2] = LineTrace(FVector(1.0f, 1.0f, 0.0f));
+	LinetraceArray[3] = LineTrace(FVector(1.0f, 2.0f, 0.0f));
+	LinetraceArray[4] = LineTrace(FVector(0.0f, 1.0f, 0.0f));
+	LinetraceArray[5] = LineTrace(FVector(-1.0f, 2.0f, 0.0f));
+	LinetraceArray[6] = LineTrace(FVector(-1.0f, 1.0f, 0.0f));
+	LinetraceArray[7] = LineTrace(FVector(-2.0f, 1.0f, 0.0f));
+	LinetraceArray[8] = LineTrace(FVector(-1.0f, 0.0f, 0.0f));
+	LinetraceArray[9] = LineTrace(FVector(-2.0f, -1.0f, 0.0f));
+	LinetraceArray[10] = LineTrace(FVector(-1.0f, -1.0f, 0.0f));
+	LinetraceArray[11] = LineTrace(FVector(-1.0f, -2.0f, 0.0f));
+	LinetraceArray[12] = LineTrace(FVector(0.0f, -1.0f, 0.0f));
+	LinetraceArray[13] = LineTrace(FVector(1.0f, -2.0f, 0.0f));
+	LinetraceArray[14] = LineTrace(FVector(1.0f, -1.0f, 0.0f));
+	LinetraceArray[15] = LineTrace(FVector(2.0f, -1.0f, 0.0f));
+
 	EntriesTick();
 	NeuralNetwork.Train(Entry);
-
+	
 	if(!NeuralNetwork.IsTrainingDone())
 	{
 		OutputsValuesTick(false);
@@ -58,61 +78,46 @@ void AAgent::InitializeNeuralNetwork()
 	}
 	
 }
-
-//TODO : Making "Raycasts" to give vision instead of relying on distance
 void AAgent::EntriesTick()
 {
-	const FVector Distance = Sphere->GetActorLocation() - GetActorLocation();
-	
-	if(Distance != FVector::Zero())
+	Entry = FTrainingEntry();
+		
+	uint32 i = 0;
+	double x = 0.375f;
+	double y = 0.875f;
+	double XStep = 0.125f;
+	double YStep = 0.125f;
+
+	while (i < 16)
 	{
-		Entry = FTrainingEntry();
-		
-		uint32 i = 0;
-		
-		while (i < 2)
+		Entry.Inputs.Add(LinetraceArray[i]);
+
+		x += XStep;
+		y += YStep;
+
+		if(x == 1.0f || x == 0.0f)
 		{
-			if(static_cast<uint32>(Entry.Inputs.Num()) < NbInputs)
-			{
-				Entry.Inputs.Add(Distance.Y);
-				Entry.Inputs.Add(Distance.X);
-			}
-			else
-			{
-				//Right : D
-				if(Distance.Y > 50.0f)
-				{
-					Entry.ExpectedOutputs.Add(1.0);
-				}
-				//Left : Q
-				else if(Distance.Y < -50.0f)
-				{
-					Entry.ExpectedOutputs.Add(0.0);
-				}
-				else
-				{
-					Entry.ExpectedOutputs.Add(0.5);
-				}
-
-				//Up : Z
-				if(Distance.X > 50.0f)
-				{
-					Entry.ExpectedOutputs.Add(1.0);
-				}
-				//Down : S
-				else if(Distance.X < -50.0f)
-				{
-					Entry.ExpectedOutputs.Add(0.0);
-				}
-				else
-				{
-					Entry.ExpectedOutputs.Add(0.5);
-				}
-			}
-
-			i++;
+			XStep = -XStep;
 		}
+
+		if(y == 1.0f || y == 0.0f)
+		{
+			YStep = -YStep;
+		}
+			
+		if(LinetraceArray[i])
+		{
+			Entry.ExpectedOutputs.Add(x);
+			Entry.ExpectedOutputs.Add(y);
+
+			return;
+		}
+
+		i++;
 	}
+
+	Entry.ExpectedOutputs.Add(0.5);
+	Entry.ExpectedOutputs.Add(0.5);
 }
 
 void AAgent::OutputsValuesTick(const bool TrainingOver)
@@ -138,4 +143,34 @@ void AAgent::SaveNeuronsDataToJson()
 		JsonSaved = true;
 		FNeuralNetworkJson::SerializeToJson(NeuralNetwork);
 	}
+}
+
+uint8 AAgent::LineTrace(FVector LineAngle) const
+{
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = StartLocation + LineAngle * 2000.0f;
+
+	FHitResult HitResult;
+	
+	bool bHit = UKismetSystemLibrary::LineTraceSingle(
+		this,
+		StartLocation,
+		EndLocation,
+		UEngineTypes::ConvertToTraceType(ECC_Visibility),
+		false,
+		TArray<AActor*>(),
+		EDrawDebugTrace::ForOneFrame,
+		HitResult,
+		true
+	);
+
+	if (bHit && HitResult.GetActor() == Sphere)
+	{
+		FVector HitLocation = HitResult.Location;
+		AActor* HitActor = HitResult.GetActor();
+
+		return true;
+	}
+
+	return false;
 }

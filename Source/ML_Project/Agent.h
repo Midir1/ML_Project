@@ -57,8 +57,11 @@ private:
 	FNetworkConfiguration NetworkConfiguration;
 	FNeuralNetwork NeuralNetwork;
 
+	TArray<uint8> LinetraceArray;
+
 	void InitializeNeuralNetwork();
 	void EntriesTick();
 	void OutputsValuesTick(const bool TrainingOver);
 	void SaveNeuronsDataToJson();
+	uint8 LineTrace(FVector LineAngle) const;
 };
