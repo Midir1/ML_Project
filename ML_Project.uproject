@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.2",
+	"EngineAssociation": "5.3",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -12,7 +12,8 @@
 				"Engine",
 				"UMG",
 				"ChaosVehicles",
-				"CoreUObject"
+				"CoreUObject",
+				"LearningAgents"
 			]
 		}
 	],
@@ -26,6 +27,10 @@
 		},
 		{
 			"Name": "ChaosVehiclesPlugin",
+			"Enabled": true
+		},
+		{
+			"Name": "LearningAgents",
 			"Enabled": true
 		}
 	]

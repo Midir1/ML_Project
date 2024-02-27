@@ -39,4 +39,6 @@ private:
 	
 	UPROPERTY()
 	UChaosVehicleMovementComponent* ChaosVehicleMovementComponent = nullptr;
+
+	int32 AgentID = -1;
 };

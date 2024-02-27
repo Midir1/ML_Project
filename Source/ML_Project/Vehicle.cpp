@@ -1,7 +1,9 @@
 #include "Vehicle.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "LearningAgentsManager.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 void AVehicle::BeginPlay()
 {
@@ -16,6 +18,16 @@ void AVehicle::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+	}
+
+	// Register Agents With Manager
+	ReceiveBeginPlay();
+
+	AActor* ManagerActor = UGameplayStatics::GetActorOfClass(GetWorld(), ALearningAgentsManager::StaticClass());
+
+	if(ManagerActor)
+	{
+		AgentID = Cast<ALearningAgentsManager>(ManagerActor)->AddAgent(this);
 	}
 }
 
