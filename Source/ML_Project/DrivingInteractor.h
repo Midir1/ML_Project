@@ -10,8 +10,6 @@ class UPlanarVelocityObservation;
 class UAngleObservation;
 class UPlanarDirectionObservation;
 class UPlanarPositionObservation;
-// class ULearningAgentsHelper;
-// class ULearningAgentsAction;
 
 UCLASS()
 class ML_PROJECT_API UDrivingInteractor : public ULearningAgentsInteractor

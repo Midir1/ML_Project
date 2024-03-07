@@ -13,7 +13,8 @@
 				"UMG",
 				"ChaosVehicles",
 				"CoreUObject",
-				"LearningAgents"
+				"LearningAgents",
+				"LearningAgentsTraining"
 			]
 		}
 	],
