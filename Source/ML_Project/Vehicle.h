@@ -10,7 +10,7 @@ UCLASS()
 class ML_PROJECT_API AVehicle : public AWheeledVehiclePawn
 {
 	GENERATED_BODY()
-
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

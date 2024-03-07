@@ -9,7 +9,7 @@ public class ML_Project : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Slate", "SlateCore", "Json", 
-			"JsonUtilities"
+			"JsonUtilities", "LearningAgents"
 		});
 	}
 }

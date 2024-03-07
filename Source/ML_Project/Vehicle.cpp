@@ -53,7 +53,7 @@ void AVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AVehicle::SetThrottle(const FInputActionValue& Value)
 {
 	const float ThrottleValue = Value.Get<float>();
-	
+
 	if (ChaosVehicleMovementComponent)
 	{
 		ChaosVehicleMovementComponent->SetThrottleInput(ThrottleValue);
