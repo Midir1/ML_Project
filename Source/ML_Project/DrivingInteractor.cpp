@@ -4,13 +4,6 @@
 #include "LearningAgentsActions.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 
-void UDrivingInteractor::BeginPlay()
-{
-	Super::BeginPlay();
-
-	TrackSplineComp = Cast<USplineComponent>(TrackSpline);
-}
-
 void UDrivingInteractor::SetupObservations_Implementation()
 {
 	Super::SetupObservations_Implementation();
@@ -41,11 +34,11 @@ void UDrivingInteractor::SetObservations_Implementation(const TArray<int32>& Age
 		const FVector AgentLocation = AgentActor->GetActorLocation();
 		const FRotator AgentRotation = AgentActor->GetActorRotation();
 
-		const float DistanceAlongSpline = SplineComponentHelper->GetDistanceAlongSplineAtPosition(AgentId, TrackSplineComp, AgentLocation);
+		const float DistanceAlongSpline = SplineComponentHelper->GetDistanceAlongSplineAtPosition(AgentId, TrackSpline, AgentLocation);
 
-		const FVector PositionAlongSpline = SplineComponentHelper->GetPositionAtDistanceAlongSpline(AgentId, TrackSplineComp, DistanceAlongSpline);
-		const FVector DirectionAlongSpline = SplineComponentHelper->GetDirectionAtDistanceAlongSpline(AgentId, TrackSplineComp, DistanceAlongSpline);
-		const float AngleAlongSpline = SplineComponentHelper->GetProportionAlongSplineAsAngle(AgentId, TrackSplineComp, DistanceAlongSpline);
+		const FVector PositionAlongSpline = SplineComponentHelper->GetPositionAtDistanceAlongSpline(AgentId, TrackSpline, DistanceAlongSpline);
+		const FVector DirectionAlongSpline = SplineComponentHelper->GetDirectionAtDistanceAlongSpline(AgentId, TrackSpline, DistanceAlongSpline);
+		const float AngleAlongSpline = SplineComponentHelper->GetProportionAlongSplineAsAngle(AgentId, TrackSpline, DistanceAlongSpline);
 
 		TrackPositionObservation->SetPlanarPositionObservation(AgentId, PositionAlongSpline, AgentLocation, AgentRotation);
 		TrackDirectionObservation->SetPlanarDirectionObservation(AgentId, DirectionAlongSpline, AgentRotation);

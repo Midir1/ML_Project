@@ -4,13 +4,6 @@
 #include "LearningAgentsCompletions.h"
 #include "Vehicle.h"
 
-void UDrivingRLTrainer::BeginPlay()
-{
-	Super::BeginPlay();
-
-	TrackSplineComp = Cast<USplineComponent>(TrackSpline);
-}
-
 void UDrivingRLTrainer::SetupRewards_Implementation()
 {
 	Super::SetupRewards_Implementation();
@@ -34,10 +27,10 @@ void UDrivingRLTrainer::SetRewards_Implementation(const TArray<int32>&AgentIds)
 		const FVector AgentLocation = AgentActor->GetActorLocation();
 
 		const FVector NearestPositionOnSpline = SplineComponentRewardHelper->GetNearestPositionOnSpline
-		(AgentId, TrackSplineComp, AgentLocation);
+		(AgentId, TrackSpline, AgentLocation);
 
 		const float VelocityAlongSpline = SplineComponentRewardHelper->GetVelocityAlongSpline
-		(AgentId, TrackSplineComp, AgentLocation, AgentActor->GetVelocity());
+		(AgentId, TrackSpline, AgentLocation, AgentActor->GetVelocity());
 		
 		OffTrackPenalty->SetPlanarPositionDifferencePenalty(AgentId, NearestPositionOnSpline,
 			AgentLocation);
@@ -64,7 +57,7 @@ void UDrivingRLTrainer::SetCompletions_Implementation(const TArray<int32>&AgentI
 		const FVector AgentLocation = AgentActor->GetActorLocation();
 
 		const FVector NearestPositionOnSpline = SplineComponentRewardHelper->GetNearestPositionOnSpline
-		(AgentId, TrackSplineComp, AgentLocation);
+		(AgentId, TrackSpline, AgentLocation);
 
 		OffTrackTermination->SetPlanarPositionDifferenceCompletion(AgentId, NearestPositionOnSpline,
 			AgentLocation);
@@ -78,6 +71,6 @@ void UDrivingRLTrainer::ResetEpisodes_Implementation(const TArray<int32>&AgentId
 	for (const int32 AgentId : AgentIds)
 	{
 		AVehicle* AgentVehicle = Cast<AVehicle>(GetAgent(AgentId));
-		AgentVehicle->ResetToRandomPointOnSpline(TrackSplineComp);
+		AgentVehicle->ResetToRandomPointOnSpline(TrackSpline);
 	}
 }

@@ -22,10 +22,9 @@ public:
 	FVector GoalLocation;
 
 	UPROPERTY(BlueprintReadWrite)
-	AActor* TrackSpline;
+	USplineComponent* TrackSpline;
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void SetupObservations_Implementation() override;
 	virtual void SetObservations_Implementation(const TArray<int32>& AgentIds) override;
 	virtual void SetupActions_Implementation() override;
@@ -37,7 +36,6 @@ private:
 	UAngleObservation* TrackGlobalPositionObservation = nullptr;
 	UPlanarVelocityObservation* CarVelocityObservation = nullptr;
 	USplineComponentHelper* SplineComponentHelper = nullptr;
-	USplineComponent* TrackSplineComp = nullptr;
 
 	UFloatAction* ThrottleBrakeAction = nullptr;
 	UFloatAction* SteeringAction = nullptr;
