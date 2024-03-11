@@ -21,7 +21,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector GoalLocation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadWrite)
 	AActor* TrackSpline;
 
 protected:
