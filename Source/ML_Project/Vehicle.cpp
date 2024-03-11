@@ -2,8 +2,33 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "LearningAgentsManager.h"
+#include "Components/SplineComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+
+void AVehicle::ResetToRandomPointOnSpline(const USplineComponent* SplineComp)
+{
+	const float RandomDistance = FMath::RandRange(0.0f, 1.0f) * SplineComp->GetSplineLength();
+
+	const FVector LocationAtDistanceAlongSpline = SplineComp->GetLocationAtDistanceAlongSpline(RandomDistance,
+		ESplineCoordinateSpace::World);
+	
+	const FRotator RotationAtDistanceAlongSpline = SplineComp->GetRotationAtDistanceAlongSpline(RandomDistance,
+		ESplineCoordinateSpace::World);
+
+	const FVector RandomLocation = FVector(FMath::RandRange(-0.5f, 0.5f) * 1200.0f,
+		FMath::RandRange(-0.5f, 0.5f) * 1200.0f,50.0f) + LocationAtDistanceAlongSpline;
+
+	const FRotator RandomRotator = FRotator(0.0f, 0.0f, FMath::RandRange(-0.5f, 0.5f)
+		* 1200.0f + RotationAtDistanceAlongSpline.Yaw);
+
+	const FTransform RandomTransform(RandomRotator, RandomLocation, FVector::One());
+	SetActorTransform(RandomTransform);
+
+	//Interrupt Angular & Linear Movement
+	GetMesh()->SetPhysicsAngularVelocityInDegrees(FVector::Zero());
+	GetMesh()->SetPhysicsLinearVelocity(FVector::Zero());
+}
 
 void AVehicle::BeginPlay()
 {

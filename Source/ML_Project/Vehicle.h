@@ -6,10 +6,15 @@
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "Vehicle.generated.h"
 
+class USplineComponent;
+
 UCLASS()
 class ML_PROJECT_API AVehicle : public AWheeledVehiclePawn
 {
 	GENERATED_BODY()
+
+public:
+	void ResetToRandomPointOnSpline(const USplineComponent* SplineComp);
 	
 protected:
 	virtual void BeginPlay() override;

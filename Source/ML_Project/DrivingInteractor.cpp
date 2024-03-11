@@ -4,6 +4,13 @@
 #include "LearningAgentsActions.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 
+void UDrivingInteractor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	TrackSplineComp = Cast<USplineComponent>(TrackSpline);
+}
+
 void UDrivingInteractor::SetupObservations_Implementation()
 {
 	Super::SetupObservations_Implementation();
@@ -31,11 +38,8 @@ void UDrivingInteractor::SetObservations_Implementation(const TArray<int32>& Age
 	for (const int32 AgentId : AgentIds)
 	{
 		const AActor* AgentActor = Cast<AActor>(GetAgent(AgentId));
-
 		const FVector AgentLocation = AgentActor->GetActorLocation();
 		const FRotator AgentRotation = AgentActor->GetActorRotation();
-
-		const USplineComponent* TrackSplineComp = Cast<USplineComponent>(TrackSpline);
 
 		const float DistanceAlongSpline = SplineComponentHelper->GetDistanceAlongSplineAtPosition(AgentId, TrackSplineComp, AgentLocation);
 

@@ -4,6 +4,7 @@
 #include "LearningAgentsInteractor.h"
 #include "DrivingInteractor.generated.h"
 
+class USplineComponent;
 class UFloatAction;
 class USplineComponentHelper;
 class UPlanarVelocityObservation;
@@ -24,6 +25,7 @@ public:
 	AActor* TrackSpline;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void SetupObservations_Implementation() override;
 	virtual void SetObservations_Implementation(const TArray<int32>& AgentIds) override;
 	virtual void SetupActions_Implementation() override;
@@ -35,6 +37,7 @@ private:
 	UAngleObservation* TrackGlobalPositionObservation = nullptr;
 	UPlanarVelocityObservation* CarVelocityObservation = nullptr;
 	USplineComponentHelper* SplineComponentHelper = nullptr;
+	USplineComponent* TrackSplineComp = nullptr;
 
 	UFloatAction* ThrottleBrakeAction = nullptr;
 	UFloatAction* SteeringAction = nullptr;

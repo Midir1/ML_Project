@@ -4,6 +4,12 @@
 #include "LearningAgentsTrainer.h"
 #include "DrivingRLTrainer.generated.h"
 
+class USplineComponent;
+class UScalarVelocityReward;
+class USplineComponentHelper;
+class UPlanarPositionDifferencePenalty;
+class UPlanarPositionDifferenceCompletion;
+
 UCLASS()
 class ML_PROJECT_API UDrivingRLTrainer : public ULearningAgentsTrainer
 {
@@ -14,11 +20,17 @@ public:
 	AActor* TrackSpline;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void SetupRewards_Implementation() override;
 	virtual void SetRewards_Implementation(const TArray<int32>& AgentIds) override;
 	virtual void SetupCompletions_Implementation() override;
 	virtual void SetCompletions_Implementation(const TArray<int32>& AgentIds) override;
+	virtual void ResetEpisodes_Implementation(const TArray<int32>&AgentIds) override;
 
 private:
-	// TODO : Find include Add Var called AddPlanar  
+	UPlanarPositionDifferencePenalty* OffTrackPenalty = nullptr;
+	UScalarVelocityReward* VelocityAlongTrackReward = nullptr;
+	USplineComponentHelper* SplineComponentRewardHelper = nullptr;
+	UPlanarPositionDifferenceCompletion* OffTrackTermination = nullptr;
+	USplineComponent* TrackSplineComp = nullptr;
 };
