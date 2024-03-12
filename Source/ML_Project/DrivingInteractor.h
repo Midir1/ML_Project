@@ -18,9 +18,6 @@ class ML_PROJECT_API UDrivingInteractor : public ULearningAgentsInteractor
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
-	FVector GoalLocation;
-
 	UPROPERTY(BlueprintReadWrite)
 	USplineComponent* TrackSpline;
 
