@@ -22,9 +22,6 @@ void UDrivingInteractor::SetupObservations_Implementation()
 
 	SplineComponentHelper = SplineComponentHelper->AddSplineComponentHelper(this,
 		FName("SplineComponentHelper"));
-
-	// TODO : fix blueprint call for getting spline comp
-	// Maybe use BP_Implement event and call here
 }
 
 void UDrivingInteractor::SetObservations_Implementation(const TArray<int32>& AgentIds)
