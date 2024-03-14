@@ -17,6 +17,5 @@ public:
 	USplineComponent* GetSplineComponent() const;
 
 private:
-	UPROPERTY(EditAnywhere)
 	USplineComponent* SplineComp = nullptr;
 };

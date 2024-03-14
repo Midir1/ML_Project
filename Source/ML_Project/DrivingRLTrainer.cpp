@@ -2,7 +2,17 @@
 #include "LearningAgentsHelpers.h"
 #include "LearningAgentsRewards.h"
 #include "LearningAgentsCompletions.h"
+#include "TrackSpline.h"
 #include "Vehicle.h"
+#include "Kismet/GameplayStatics.h"
+
+void UDrivingRLTrainer::BeginPlay()
+{
+	Super::BeginPlay();
+
+	TrackSpline = Cast<ATrackSpline>(UGameplayStatics::GetActorOfClass(GetWorld(),
+		ATrackSpline::StaticClass()))->GetSplineComponent();
+}
 
 void UDrivingRLTrainer::SetupRewards_Implementation()
 {

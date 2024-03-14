@@ -16,11 +16,7 @@ UCLASS()
 class ML_PROJECT_API UDrivingInteractor : public ULearningAgentsInteractor
 {
 	GENERATED_BODY()
-
-public:
-	UPROPERTY(BlueprintReadWrite)
-	USplineComponent* TrackSpline;
-
+	
 protected:
 	virtual void SetupObservations_Implementation() override;
 	virtual void SetObservations_Implementation(const TArray<int32>& AgentIds) override;
@@ -36,4 +32,6 @@ private:
 
 	UFloatAction* ThrottleBrakeAction = nullptr;
 	UFloatAction* SteeringAction = nullptr;
+
+	USplineComponent* TrackSpline = nullptr;
 };

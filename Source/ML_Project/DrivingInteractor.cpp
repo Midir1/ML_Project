@@ -3,6 +3,8 @@
 #include "LearningAgentsHelpers.h"
 #include "LearningAgentsActions.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
+#include "TrackSpline.h"
+#include "Kismet/GameplayStatics.h"
 
 void UDrivingInteractor::SetupObservations_Implementation()
 {
@@ -22,6 +24,9 @@ void UDrivingInteractor::SetupObservations_Implementation()
 
 	SplineComponentHelper = SplineComponentHelper->AddSplineComponentHelper(this,
 		FName("SplineComponentHelper"));
+
+	TrackSpline = Cast<ATrackSpline>(UGameplayStatics::GetActorOfClass(GetWorld(),
+		ATrackSpline::StaticClass()))->GetSplineComponent();
 }
 
 void UDrivingInteractor::SetObservations_Implementation(const TArray<int32>& AgentIds)
